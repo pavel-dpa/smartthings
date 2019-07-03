@@ -11,8 +11,8 @@ definition(
 preferences {
 
 	section("Temp limits") {
-    input (name:"winter_temp", type: "number" , title: "Winter temp", defaultValue: 10) 
-    input (name:"summer_temp", type: "number" , title: "Summer temp", defaultValue: 16) 
+    input (name:"winter_temp", type: "decimal" , title: "Winter temp", defaultValue: 10) 
+    input (name:"summer_temp", type: "decimal" , title: "Summer temp", defaultValue: 16) 
     }
 
  	section("Lists of temperatures") {
@@ -62,6 +62,8 @@ def installed() {
 def updated() {
 	//unsubscribe()
 	
+    state.TemeratureSet = ""
+    
 	unschedule()
  	checkWeather()
     set_schedulers()
@@ -124,19 +126,42 @@ def checkWeather(){
  case {it<winter_temp}:
  	thermostat_set = winter_c_temp //.split(",")
      log.debug "winter set $avg_day"
-    //set winter temperature
- 	send("Day-Night temp is $avg_day 캜. Winter set is enabled")
+     //set winter temperature
+     if (state.TemeratureSet == "Winter")
+     {
+     	send("Day-Night temp is $avg_day 째C. Winter set is enabled", "")
+     } else
+      {
+ 		send("Day-Night temp is $avg_day 째C. Winter set is enabled", "push")
+      }
+    
+    state.TemeratureSet = "Winter"
     break;
  case {it>winter_temp && it<summer_temp}:
  	log.debug "spring set $avg_day"
  	thermostat_set = spring_c_temp//.split(",")
-    send("Day-Night temp is $avg_day 캜. Spring set is enabled")
+     if (state.TemeratureSet == "Spring")
+     {
+      	 send("Day-Night temp is $avg_day 째C. Spring set is enabled", "")
+     } else
+      {
+   		 send("Day-Night temp is $avg_day 째C. Spring set is enabled", "push")
+    	}    
+    
+    state.TemeratureSet = "Spring"
  	break;
  default:
  	//>summer_temp
  	log.debug "summer set $avg_day"
  	thermostat_set = summer_c_temp //.split(",")
-    send("Day-Night temp is $avg_day 캜. Summer set is enabled")
+     if (state.TemeratureSet == "Summer")
+     {
+   		 send("Day-Night temp is $avg_day 째C. Summer set is enabled", "")
+     } else
+      {
+    	 send("Day-Night temp is $avg_day 째C. Summer set is enabled", "push")
+	  }
+    state.TemeratureSet = "Summer"
  	break; 
  }
  
@@ -175,15 +200,21 @@ if (list_temerature!=null){
 
 
 
-private send(msg) {
+private send(msg, typem) {
     if (location.contactBookEnabled) {
         log.debug("sending notifications to: ${recipients?.size()}")
         sendNotificationToContacts(msg, recipients)
     }
     else {
         if (sendPushMessage != "No") {
-            log.debug("sending push message")
-            sendPush(msg)
+        	if (typem == "push") {
+            	log.debug("sending push message")
+            	sendPush(msg)
+            } else
+            {
+              log.debug("sending send notification event")
+              sendNotificationEvent(msg)
+            }
         }
 
         if (phone1) {
@@ -200,9 +231,9 @@ private send(msg) {
 def accuweather_current_avgtem()
 {
 
-	///http://dataservice.accuweather.com/forecasts/v1/daily/5day/
+	///http://dataservice.accuweather.com/forecasts/v1/daily/5day/1218844?apikey=MNRps0GCqAbArykpkM5zj6bPShIRKT2y&details=true&metric=true"
 	def keylocation = "1218844" // location key based on accuweather data - you can get that on their website
-    def APIkey = ///you should put here your API key"MNRp"
+    def APIkey = "MNRps0GCqAbArykpkM5zj6bPShIRKT2y"
     def details = "true"
 	def metrics = "true"
 	
