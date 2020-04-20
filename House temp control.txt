@@ -5,22 +5,39 @@ definition(
     description: "Control temp of house based on weather forecast and pre-defined programm",
     category: "Convenience",
     iconUrl: "http://cdn.device-icons.smartthings.com/Home/home1-icn.png",
-    iconX2Url: "http://cdn.device-icons.smartthings.com/Home/home1-icn@2x.png"
+    iconX2Url: "http://cdn.device-icons.smartthings.com/Home/home1-icn@2x.png",
+    iconX3Url: "http://cdn.device-icons.smartthings.com/Home/home1-icn@2x.png"
 )
 
 preferences {
 
 	section("Temp limits") {
     input (name:"winter_temp", type: "decimal" , title: "Winter temp", defaultValue: 10) 
-    input (name:"summer_temp", type: "decimal" , title: "Summer temp", defaultValue: 16) 
+    input (name:"summer_temp", type: "decimal" , title: "Summer temp", defaultValue: 15.3) 
     }
 
  	section("Lists of temperatures") {
-    input (name:"winter_c_temp", type: "text" , title: "Winter set", defaultValue: "19,23,29,29,27,28,28,23,23,28")     
-     input (name:"spring_c_temp", type: "text" , title: "Spring set", defaultValue: "19,22,24,24,24,24,28,22,22,28")
-     input (name:"summer_c_temp", type: "text" , title: "Summer set", defaultValue: "19,22,15,15,15,15,28,22,22,28")
+    input (name:"winter_c_temp", type: "text" , title: "Winter set", defaultValue: "19,22,29,29,28,28,28,22,22,28")     
+     input (name:"spring_c_temp", type: "text" , title: "Spring set", defaultValue: "19,22,24,24,24,24,28,21,10,28")
+     input (name:"summer_c_temp", type: "text" , title: "Summer set", defaultValue: "14,12,15,15,15,15,27,31,32,27")
 	
      }
+     
+           section("Switch check")
+    {
+	 input (name:"winter_switch_temp", type: "decimal" , title: "Winter switch", defaultValue: 21.5)  
+     input (name:"sping_switch_temp", type: "decimal" , title: "Spring switch", defaultValue: 23.5) 
+          input "tempSwitch",title:"Check temp inside", "capability.thermostat"
+	}
+     
+          section("Check weather scheduler")
+    {
+		input "checktime01", "time", title: "First 3:00AM",  required: true
+        input "checktime02", "time", title: "Second 10:00AM",  required: false        
+        input "checktime03", "time", title: "Dinner check 3:00PM",  required: false        
+        input "checktime04", "time", title: "Evening check 10:00PM",  required: false        
+	}
+     
 	section("Thermostats") {
 		input "tempLivingRoom",title:"01 - Living Room", "capability.thermostat",required: true
         input "tempGuestRoom",title:"01 - Guest Room", "capability.thermostat"
@@ -35,14 +52,7 @@ preferences {
 
 	}
         
-        section("Check weather scheduler")
-    {
-		input "checktime01", "time", title: "First 3:00AM",  required: true
-        input "checktime02", "time", title: "Second 10:00AM",  required: false        
-        input "checktime03", "time", title: "Dinner check 3:00PM",  required: false        
-        input "checktime04", "time", title: "Evening check 10:00PM",  required: false        
-	}
-     
+   
 	
     section( "Notifications" ) {
         input("recipients", "contact", title: "Send notifications to") {
@@ -65,7 +75,7 @@ def updated() {
     state.TemeratureSet = ""
     
 	unschedule()
- 	checkWeather()
+ 	checkWeather(false)
     set_schedulers()
     
 }
@@ -76,7 +86,7 @@ def set_schedulers()
      // 4 schedulers (3AM 10AM, 3PM, 10PM)
     
     log.debug "check 01"
- 	schedule(checktime01,"checkWeather")
+ 	schedule(checktime01,"checkWeather_01")
     
     if (checktime02){
     	log.debug "check 02"
@@ -92,74 +102,88 @@ def set_schedulers()
         }
 }
 
+def checkWeather_01(){
+	
+    checkWeather(true)
+}
+
 def checkWeather_02(){
 	
-    checkWeather()
+    checkWeather(true)
 }
 
 def checkWeather_03(){
 	
-    checkWeather()
+    checkWeather(true)
 }
 
 def checkWeather_04(){
 	
-    checkWeather()
+    checkWeather(true)
 }
 
 
-def checkWeather(){
+def checkWeather(up_date){
 
- //def temp_winter_C = [19,23,29,29,27,28,28,23,23,28]
- //def temp_spring_C = [19,22,24,24,24,24,28,22,22,28]
+ //def temp_winter_C = [19,22,29,29,28,28,28,22,22,28]
+ //def temp_spring_C = [19,20,25,25,25,25,28,21,21,28]
  //def temp_summer_C = [19,22,15,15,15,15,28,22,22,28] 
 
- def avg_day = accuweather_current_avgtem()
-// def avg_day = 15.3
+def avg_day = accuweather_current_avgtem()
+/*testing purpose*/ 
+//def avg_day = 5.3
  
     log.debug "$avg_day"
 
  def thermostat_set = []
  
+ def temp_term_check = tempSwitch.temperatureState.numberValue
+ 
+ log.debug "tempSwitch temp  $temp_term_check"
+ 
  switch (avg_day)
  {
- case {it<winter_temp}:
+ case {it<winter_temp && winter_switch_temp>temp_term_check}:
  	thermostat_set = winter_c_temp //.split(",")
      log.debug "winter set $avg_day"
      //set winter temperature
-     if (state.TemeratureSet == "Winter")
+     if (state.TemeratureSet == "Winter" && up_date)
      {
-     	send("Day-Night temp is $avg_day 째C. Winter set is enabled", "")
+     	send("Day-Night temp is $avg_day 캜. Winter set is continues", "")
      } else
       {
- 		send("Day-Night temp is $avg_day 째C. Winter set is enabled", "push")
+ 		send("Day-Night temp is $avg_day 캜. Winter set is enabled", "push")
+        thermostat_updates(thermostat_set)
       }
     
     state.TemeratureSet = "Winter"
     break;
- case {it>winter_temp && it<summer_temp}:
+ case {(it>=winter_temp && it<summer_temp) || (sping_switch_temp>temp_term_check && temp_term_check>=winter_switch_temp)}:
  	log.debug "spring set $avg_day"
  	thermostat_set = spring_c_temp//.split(",")
-     if (state.TemeratureSet == "Spring")
+     if (state.TemeratureSet == "Spring" && up_date)
      {
-      	 send("Day-Night temp is $avg_day 째C. Spring set is enabled", "")
+      	 send("Day-Night temp is $avg_day 캜 and check temp is $temp_term_check 캜. Spring set is continues", "")
      } else
       {
-   		 send("Day-Night temp is $avg_day 째C. Spring set is enabled", "push")
+   		 send("Day-Night temp is $avg_day 캜 and check temp is $temp_term_check 캜. Spring set is enabled", "push")
+         thermostat_updates(thermostat_set)
     	}    
     
     state.TemeratureSet = "Spring"
  	break;
+ // case {it>=summer_temp}:
  default:
  	//>summer_temp
  	log.debug "summer set $avg_day"
  	thermostat_set = summer_c_temp //.split(",")
-     if (state.TemeratureSet == "Summer")
+     if (state.TemeratureSet == "Summer" && up_date)
      {
-   		 send("Day-Night temp is $avg_day 째C. Summer set is enabled", "")
+   		 send("Day-Night temp is $avg_day 캜. Summer set is continues", "")
      } else
       {
-    	 send("Day-Night temp is $avg_day 째C. Summer set is enabled", "push")
+    	 send("Day-Night temp is $avg_day 캜. Summer set is enabled", "push")
+         thermostat_updates(thermostat_set)
 	  }
     state.TemeratureSet = "Summer"
  	break; 
@@ -168,7 +192,7 @@ def checkWeather(){
  //log.debug "$thermostat_set"
  //send("SET1 $thermostat_set")
 
- thermostat_updates(thermostat_set)
+ 
  
 
 }
@@ -178,20 +202,42 @@ def thermostat_updates(tempreture_up)
 
 log.debug "$tempreture_up"
 
+//def list_temerature = tempreture_up.split(",") // impementation for text type
 def list_temerature = tempreture_up.split(",")
 
 if (list_temerature!=null){
 	if (list_temerature!="") {
-            tempLivingRoom.setTempHM(list_temerature[0])
-            tempGuestRoom.setTempHM(list_temerature[1])
-            tempUF_LR.setTempHM(list_temerature[2])
-            tempUF_K.setTempHM(list_temerature[3])
-            tempUF_H.setTempHM(list_temerature[4])
-            tempUF_F.setTempHM(list_temerature[5])
-            tempUF_B01.setTempHM(list_temerature[6])
-            tempBedRoom.setTempHM(list_temerature[7])
-            tempChildren.setTempHM(list_temerature[8])
-            tempUF_B02.setTempHM(list_temerature[9])
+		def LivingRoom_t = list_temerature[0]    
+            tempLivingRoom.setTempHM(LivingRoom_t, true)
+            
+            def GuestRoom_t = list_temerature[1]
+            tempGuestRoom.setTempHM(GuestRoom_t, true)
+            
+            def UF_LR_t = list_temerature[2]
+            tempUF_LR.setTempHM(UF_LR_t, true)
+            
+            def UF_K_t = list_temerature[3]
+            tempUF_K.setTempHM(UF_K_t, true)
+            
+            def UF_H_t = list_temerature[4]
+            tempUF_H.setTempHM(UF_H_t, true)
+            
+            def UF_F_t = list_temerature[5]
+            tempUF_F.setTempHM(UF_F_t, true)
+            
+            def UF_B01_t = list_temerature[6]
+            tempUF_B01.setTempHM(UF_B01_t, true)
+            log.debug "B01 $UF_B01_t"
+            
+            def BedRoom_t = list_temerature[7]
+            tempBedRoom.setTempHM(BedRoom_t, true)
+            
+            def Children_t = list_temerature[8]
+            tempChildren.setTempHM(Children_t, true)
+            
+            def UF_B02_t = list_temerature[9]
+            tempUF_B02.setTempHM(UF_B02_t, true)
+            log.debug "B02 $UF_B02_t"
 		}
     }
 }
@@ -271,8 +317,8 @@ def accuweather_current_avgtem()
 							//log.debug "temp day result: $day_temp"
                             //log.debug "temp night result: $night_temp"
                             
-                            //log.debug "temp day RF result: $day_temp_RF"
-                            //log.debug "temp night RF result: $night_temp_RF"
+                           // log.debug "temp day RF result: $day_temp_RF"
+                           // log.debug "temp night RF result: $night_temp_RF"
                            //CHECK DAY temp
                            	if (day_temp[0]<day_temp_RF[0])
                             {

@@ -703,8 +703,8 @@ def ensureAlexaCapableMode() {
 }
 
 
-
-def setTempHM(newtemp)
+/* OLD IMPLEMENTATION
+def setTempHM(newtemp, hold_on)
 {
 
 
@@ -716,7 +716,7 @@ def setTempHM(newtemp)
     }
     else {
     	cmds << sendEvent(name: "manualSetpoint", value: "${newtemp}°C")
-		chooseSetTempOrSetHold()
+        if (hold_on) {chooseSetTempOrSetHold()}
     }
 
 
@@ -739,4 +739,24 @@ def setTempHM(newtemp)
     }
 
     return cmds
+}
+
+*/
+
+def setTempHM(newtemp, hold_on)
+{
+
+	def cmds = []
+    //The device is a normal thermostat so use normal set temp
+    parent.childSetTemp(newtemp.toString(), device.deviceNetworkId)
+    
+
+ 	cmds<< sendEvent(name: "thermostatSetpoint", value: newtemp, displayed: false)
+	cmds << sendEvent(name: "heatingSetpoint", value: newtemp, displayed: false)
+	cmds << sendEvent(name: "coolingSetpoint", value: newtemp, displayed: false)
+    return cmds
+
+	/*cmds << sendEvent(name: "manualSetpoint", value: "${newtemp}°C")
+	if (hold_on) {chooseSetTempOrSetHold()}
+    return cmds*/
 }
