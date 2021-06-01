@@ -23,6 +23,16 @@ definition(
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
     iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
 
+/* TODO
+ 
+ - schedule for each valave
+ - valve by mm per hour
+ - valve by mm per hour + weather today yesterday - tomorrow
+
+*/
+
+
+
 
 preferences {
 
@@ -146,6 +156,7 @@ def set_schedulers()
 
    
     def processing_time = Date.parse("yyyy-MM-dd'T'HH:mm:ss.SSSZ", start_before_W)
+    
            //calculate the offset
     def v_time = valve01_Timer.toInteger()*valve01_count.toInteger()
     if (valve02_Timer) {v_time = v_time+valve02_Timer.toInteger()*valve02_count.toInteger()}
@@ -155,13 +166,13 @@ def set_schedulers()
     if (valve06_Timer) {v_time = v_time+valve06_Timer.toInteger()*valve06_count.toInteger()}
     if (valve07_Timer) {v_time = v_time+valve07_Timer.toInteger()*valve07_count.toInteger()}
     if (valve08_Timer) {v_time = v_time+valve08_Timer.toInteger()*valve08_count.toInteger()}
-   
-       
-    def start_b_w_time = new Date(processing_time - (v_time * 60 * 1000))
+
+
+
+
+	def start_b_w_time = new Date( processing_time.time - v_time*60 * 1000).format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
     
-    
-  
-   
+	   
    
     if (Sunrize_Sunset_check)
     {
@@ -186,17 +197,18 @@ def set_schedulers()
 			
             
             if (Sunrize_check_info){
-				schedule(sunrise_offset.time(),wattering)
-				log.debug "schedules sunrise wattering for: $sunrise_offset.time()"
+				schedule(sunrise_offset,wattering)
+				log.debug "schedules sunrise wattering for: $sunrise_offset"
                 }
        		
             if (Sunset_check_info) {
-        		schedule(sunset_offset.time(),wattering)
-        		log.debug "schedules sunset wattering for: $sunset_offset.time()"
+        		schedule(sunset_offset,wattering)
+        		log.debug "schedules sunset wattering for: $sunset_offset"
                 }
 
-		schedule("0 30 0 ? * MON-SUN", set_schedulers)   
-        log.debug "schedules check for: 00:30 AM"
+	    schedule("24 00 * * * ?", set_schedulers)
+        log.debug "schedules check for: 00:00 AM"
+        	//	schedule("0 30 0 ? * MON-SUN", set_schedulers)   
     }
     else {
     
@@ -210,13 +222,22 @@ def set_schedulers()
 	   // CHANGE!!!! TO start_b_w_time
        // schedule(start_before_W,wattering)
        
-       schedule(start_b_w_time.time(),wattering)
-   		log.debug "schedules wattering for: $start_b_w_time.time()"        
+		def processing_time_Final = Date.parse("yyyy-MM-dd'T'HH:mm:ss", start_b_w_time)
+		def sch_string =  processing_time_Final.hours + " " + processing_time_Final.minutes+ " * * * ?"	
+    
+		//schedule("0 30 0 ? * MON-SUN", set_schedulers)   
+    
+       schedule(sch_string,wattering)
+   		log.debug "schedules wattering for: $sch_string"        
         }
     
     if (start_after_W){
-        schedule(start_after_W.time(),wattering)
-        log.debug "schedules wattering for: $start_after_W.time()"     
+    
+    	def processing_time_Final_A = Date.parse("yyyy-MM-dd'T'HH:mm:ss", start_b_w_time)
+		def sch_string_A =  processing_time_Final_A.hours + " " + processing_time_Final_A.minutes+ " * * * ?"	
+        
+        schedule(sch_string_A,wattering)
+        log.debug "schedules wattering for: $sch_string_A"     
         }
     }   
 }
