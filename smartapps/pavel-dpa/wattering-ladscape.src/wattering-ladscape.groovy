@@ -13,6 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+ 
 definition(
     name: "wattering ladscape",
     namespace: "pavel-dpa",
@@ -51,7 +52,7 @@ preferences {
 
 	section("Timers")
     {
-		input "start_before_W", "time", title: "First end (normally 4:30AM)",  required: true
+		input "start_before_W", "time", title: "First end (normally 4:30AM)",  required: false
         input "start_after_W", "time", title: "Second start (21:50AM )", required: false
         
 	}
@@ -155,7 +156,6 @@ def set_schedulers()
 
 
    
-    def processing_time = Date.parse("yyyy-MM-dd'T'HH:mm:ss.SSSZ", start_before_W)
     
            //calculate the offset
     def v_time = valve01_Timer.toInteger()*valve01_count.toInteger()
@@ -170,7 +170,6 @@ def set_schedulers()
 
 
 
-	def start_b_w_time = new Date( processing_time.time - v_time*60 * 1000).format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
     
 	   
    
@@ -198,11 +197,13 @@ def set_schedulers()
             
             if (Sunrize_check_info){
 				schedule(sunrise_offset,wattering)
+                sendMessage("watterind setuped to : $sunrise_offset")
 				log.debug "schedules sunrise wattering for: $sunrise_offset"
                 }
        		
             if (Sunset_check_info) {
         		schedule(sunset_offset,wattering)
+                sendMessage("watterind setuped to : $sunset_offset")
         		log.debug "schedules sunset wattering for: $sunset_offset"
                 }
 
@@ -219,24 +220,28 @@ def set_schedulers()
     
     if (start_before_W){
 
-	   // CHANGE!!!! TO start_b_w_time
-       // schedule(start_before_W,wattering)
-       
+	    def processing_time = Date.parse("yyyy-MM-dd'T'HH:mm:ss.SSSZ", start_before_W)
+		def start_b_w_time = new Date( processing_time.time - v_time*60 * 1000).format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
 		def processing_time_Final = Date.parse("yyyy-MM-dd'T'HH:mm:ss", start_b_w_time)
-		def sch_string =  processing_time_Final.hours + " " + processing_time_Final.minutes+ " * * * ?"	
+		//def sch_string =  "00"+processing_time_Final.hours + " " + processing_time_Final.minutes+ " * * * ?"	
+        def sch_string =  "0 "+processing_time_Final.minutes+" "+processing_time_Final.hours + " ? * MON-SUN"	
     
 		//schedule("0 30 0 ? * MON-SUN", set_schedulers)   
     
        schedule(sch_string,wattering)
+       sendMessage("watterind setuped to : $sch_string")
    		log.debug "schedules wattering for: $sch_string"        
+        
         }
     
     if (start_after_W){
     
-    	def processing_time_Final_A = Date.parse("yyyy-MM-dd'T'HH:mm:ss", start_b_w_time)
-		def sch_string_A =  processing_time_Final_A.hours + " " + processing_time_Final_A.minutes+ " * * * ?"	
+    	def processing_time_Final_A = Date.parse("yyyy-MM-dd'T'HH:mm:ss", start_after_W)
+		//def sch_string_A =  processing_time_Final_A.hours + " " + processing_time_Final_A.minutes+ " * * * ?"	
+        def sch_string_A =  "0 "+processing_time_Final_A.minutes+" "+processing_time_Final_A.hours + " ? * MON-SUN"	
         
         schedule(sch_string_A,wattering)
+        sendMessage("watterind setuped to : $sch_string_A")
         log.debug "schedules wattering for: $sch_string_A"     
         }
     }   
@@ -302,7 +307,7 @@ switch (state.VALVE_NUMBER)
           {
                   log.debug "wattering v3 start for, min $valve03_Timer"
         		  def v3_time = valve03_Timer.toInteger()
-        		  valve03.on()
+       		  valve03.on()
         		  runIn(v3_time*60,valves_off) 
         	} else {runIn(1,valves_off)}
         } else {runIn(1,valves_off)}
@@ -314,7 +319,7 @@ switch (state.VALVE_NUMBER)
           {
                 log.debug "wattering v4 start for, min $valve04_Timer"
                 def v4_time = valve04_Timer.toInteger()
-                valve04.on()
+               valve04.on()
                 runIn(v4_time*60,valves_off)    
         	} else {runIn(1,valves_off)}
         } else {runIn(1,valves_off)}
@@ -326,7 +331,7 @@ switch (state.VALVE_NUMBER)
           {
             log.debug "wattering v5 start for, min $valve05_Timer"
             def v5_time = valve05_Timer.toInteger()
-            valve05.on()
+           valve05.on()
             runIn(v5_time*60,valves_off)    
        	  } else {runIn(1,valves_off)}
         } else {runIn(1,valves_off)}
@@ -338,7 +343,7 @@ switch (state.VALVE_NUMBER)
           {
                 log.debug "wattering v6 start for, min $valve06_Timer"
                 def v6_time = valve06_Timer.toInteger()
-                valve06.on()
+               valve06.on()
                 runIn(v6_time*60,valves_off)    
         	} else {runIn(1,valves_off)}
         } else {runIn(1,valves_off)}
@@ -350,7 +355,7 @@ switch (state.VALVE_NUMBER)
           {
             log.debug "wattering v7 start for, min $valve07_Timer"
             def v7_time = valve07_Timer.toInteger()
-            valve07.on()
+           valve07.on()
             runIn(v7_time*60,valves_off)    
         	} else {runIn(1,valves_off)}
         } else {runIn(1,valves_off)}
