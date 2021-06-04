@@ -260,6 +260,15 @@ def wattering ()
 	log.debug "valve_main ON"
 
 
+	if (valve01) {valve01.off}
+	if (valve02) {valve02.off}
+	if (valve03) {valve03.off}
+    if (valve04) {valve04.off}
+    if (valve05) {valve05.off}
+    if (valve06) {valve06.off}
+    if (valve07) {valve07.off}
+    if (valve08) {valve08.off}
+
 
 if (state.VALVE_SESSION.toInteger()==1 && state.VALVE_NUMBER.toInteger()==1) 
 
