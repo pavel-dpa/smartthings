@@ -229,8 +229,8 @@ def set_schedulers()
 		//schedule("0 30 0 ? * MON-SUN", set_schedulers)   
     
        schedule(sch_string,wattering)
-       sendMessage("watterind setuped to : $sch_string")
-   		log.debug "schedules wattering for: $sch_string"        
+       sendMessage("watterind setuped to : $processing_time_Final")
+   		log.debug "schedules wattering for: $processing_time_Final"        
         
         }
     
@@ -241,8 +241,8 @@ def set_schedulers()
         def sch_string_A =  "0 "+processing_time_Final_A.minutes+" "+processing_time_Final_A.hours + " ? * MON-SUN"	
         
         schedule(sch_string_A,wattering)
-        sendMessage("watterind setuped to : $sch_string_A")
-        log.debug "schedules wattering for: $sch_string_A"     
+        sendMessage("watterind setuped to : $processing_time_Final_A")
+        log.debug "schedules wattering for: $processing_time_Final_A"     
         }
     }   
 }
