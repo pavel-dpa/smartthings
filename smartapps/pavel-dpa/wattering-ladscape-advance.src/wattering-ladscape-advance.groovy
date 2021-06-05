@@ -126,14 +126,16 @@ def initialize() {
 	
     
     /* TO DO
-    	scheduler by day of week ????
+    #1 - 	scheduler by day of week ????
         	- less empty session runs
             - maybe easy scheduling
      		-flexible time for each day
             
-        Symetric waterind one day morning one day evening
+    #2 -  Symetric waterind one day morning one day evening
     
-    	wattering by weather
+    #3 -  sunset and sunrise by event - subscription https://github.com/SmartThingsCommunity/Code/blob/master/smartapps/sunrise-sunset/turn-on-at-sunset.groovy
+    
+    #4 -  wattering by weather
     */
     
     // reset order start
@@ -155,7 +157,7 @@ def max_session_valves()
 {
 	def result = 0
     
-     def list_max_val = valve01_first+","+valve01_second+","+valve02_first+","+valve02_second+","+valve03_first+","+valve03_second+","+valve04_first+","+valve04_second+","
+     def list_max_val = valve01_first+","+valve01_second+","+valve02_first+","+valve02_second+","+valve03_first+","+valve03_second+","+valve04_first+","+valve04_second
     	list_max_val = list_max_val+"," + valve05_first+","+valve05_second+","+valve06_first+","+valve06_second+","+valve07_first+","+valve07_second+","+valve08_first+","+valve08_second
     
     // DEFINE MAX SESSION COUNT ----- TODO ---- REORDER AFTER DAY OF WEEK AND ORDER 
@@ -169,6 +171,7 @@ def max_session_valves()
     	def ttt=0
     	for (int i=1; i<=list_max_val_process.size(); i+=2) 
     		{
+        //		log.debug "i==== $i"
         		if (list_max_val_process[i]) {ttt= list_max_val_process[i]}
 				//log.debug "ttt==== ${ttt}"
 
@@ -421,20 +424,36 @@ if (Sunrize_Sunset_check)
     
    		log.debug "setup schedules are using sunset and sunerise"
    
-   
+   		def date_h= new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
 			
-            
-            if ((Sunrize_check_info) && (state.order_manage ==1)){
+            //shedule for this day
+            if ((Sunrize_check_info) && (state.order_manage ==1) && (date_h<=sunrise_offset)){
 				schedule(sunrise_offset,wattering)
                 sendMessage("watterind setuped to : $sunrise_offset",message_type)
 				log.debug "schedules sunrise wattering for: $sunrise_offset"
                 }
        		
+            //shedule for next day
+            if ((Sunrize_check_info) && (date_h>sunrise_offset))
+            	{
+				
+                def Sunset_Sunrise_tomorrow = getSunriseAndSunset(sunriseOffset: Sunrize_delay_FULL, sunsetOffset: Sunset_delay, date: new Date()+1)
+  				def sunrise_offset_tomorrow =Sunset_Sunrise_tomorrow.sunrise.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+			
+                 
+        		schedule(sunrise_offset_tomorrow,wattering)
+               	sendMessage("watterind setuped to next day : $sunrise_offset_tomorrow",message_type)
+        		log.debug "schedules sunset wattering for next day: $sunrise_offset_tomorrow"
+                }
+            
+            
             if ((Sunset_check_info) && (state.order_manage ==2)) {
         		schedule(sunset_offset,wattering)
                sendMessage("watterind setuped to : $sunset_offset",message_type)
         		log.debug "schedules sunset wattering for: $sunset_offset"
                 }
+                
+			
 
 	 
     	}
@@ -532,13 +551,19 @@ def set_schedulers(message_type)
       
              
 	// setup every day schedule to correct setup sunrise and sunsets             
-   schedule("24 00 * * * ?", set_schedulers)
-	log.debug "schedules check for: 00:00 AM"
+  // schedule("24 00 * * * ?", sheduler_24_mid )
+	//log.debug "schedules check for: 00:00 AM"
         	//	schedule("0 30 0 ? * MON-SUN", set_schedulers)   
    
 }
 
 // TODO: implement event handlers
+/*
+def sheduler_24_mid(message_type)
+{
+	set_schedulers (message_type)
+}
+*/
 
 def wattering ()
 {
