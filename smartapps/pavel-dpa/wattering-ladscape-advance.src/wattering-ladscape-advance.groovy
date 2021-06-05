@@ -532,7 +532,7 @@ def set_schedulers(message_type)
       
              
 	// setup every day schedule to correct setup sunrise and sunsets             
-   schedule("24 00 * * * ?", set_schedulers(false))
+   schedule("24 00 * * * ?", set_schedulers)
 	log.debug "schedules check for: 00:00 AM"
         	//	schedule("0 30 0 ? * MON-SUN", set_schedulers)   
    
