@@ -58,45 +58,45 @@ preferences {
 	}
     section("Valves to adjust...")
     {
-		input "valve_main", "capability.switch",description: "Main valve", required: true, multiple: false
+		input "valve_main", "capability.switch",title: "Main valve", required: true, multiple: false
         
-        input "valve01", "capability.switch", required: true, multiple: false
-		input "valve01_first", type: "text" , title: "Zone one morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
-        input "valve01_second", type: "text" , title: "Zone one evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"        
+        input "valve01", "capability.switch", title: "Zone one valve", required: true, multiple: false
+		input "valve01_first", type: "text" , title: "Zone one morning run", required: false, defaultValue: "3,3,3,3,3,3,3,3,3,3,3,3,3,3"
+        input "valve01_second", type: "text" , title: "Zone one evening run",required: false, defaultValue: "3,3,3,3,3,3,3,3,3,3,3,3,3,3"        
         
-        input "valve02", "capability.switch", required: false, multiple: false
+        input "valve02", "capability.switch", title: "Zone two valve", required: false, multiple: false
         input "valve02_first", type: "text" , title: "Zone two morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
         input "valve02_second", type: "text" , title: "Zone two evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"        
         
 
         
-        input "valve03", "capability.switch", required: false, multiple: false
+        input "valve03", "capability.switch", title: "Zone Three valve", required: false, multiple: false
       	input "valve03_first", type: "text" , title: "Zone Three morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
         input "valve03_second", type: "text" , title: "Zone Three evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"              
 
         
-        input "valve04", "capability.switch", required: false, multiple: false
+        input "valve04", "capability.switch", title: "Zone Four valve", required: false, multiple: false
       	input "valve04_first", type: "text" , title: "Zone Four morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
         input "valve04_second", type: "text" , title: "Zone Four evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"         
         
         
-        input "valve05", "capability.switch", required: false, multiple: false
+        input "valve05", "capability.switch", title: "Zone Five valve", required: false, multiple: false
       	input "valve05_first", type: "text" , title: "Zone Five morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
         input "valve05_second", type: "text" , title: "Zone Five evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"         
         
         
-        input "valve06", "capability.switch", required: false, multiple: false
+        input "valve06", "capability.switch", title: "Zone Six valve", required: false, multiple: false
         input "valve06_first", type: "text" , title: "Zone Six morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
         input "valve06_second", type: "text" , title: "Zone Six evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"         
         
         
-        input "valve07", "capability.switch", required: false, multiple: false
+        input "valve07", "capability.switch", title: "Zone Seven valve", required: false, multiple: false
 		input "valve07_first", type: "text" , title: "Zone Seven morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
         input "valve07_second", type: "text" , title: "Zone Seven evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"         
 
         
       
-        input "valve08", "capability.switch", required: false, multiple: false
+        input "valve08", "capability.switch", title: "Zone Eight valve", required: false, multiple: false
 		input "valve08_first", type: "text" , title: "Zone Eight morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
         input "valve08_second", type: "text" , title: "Zone Eight evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"      
         
@@ -292,35 +292,45 @@ def correct_valves_data(order_manage_valve)
     
  	if (order_manage_valve ==1)
         {
-        	state.valve01_Timer = valve01_first[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        	state.valve01_count = valve01_first[(week_day_num*2-1)] //1 3 5 7 9 11 13
+        	def v1_list = valve01_first.split(",")
+        	state.valve01_Timer = v1_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        	state.valve01_count = v1_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
             if (valve02) {
-            		state.valve02_Timer = valve02_first[((week_day_num-1)*2)] //0 2 4 6 8 10 12 }
-        			state.valve02_count = valve02_first[(week_day_num*2-1)] //1 3 5 7 9 11 13
+					
+                    def v2_list = valve02_first.split(",")
+            		state.valve02_Timer = v2_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 }
+        			state.valve02_count = v2_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
             			}
-			if (valve03) {                        
-            		state.valve03_Timer = valve03_first[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve03_count = valve03_first[(week_day_num*2-1)] //1 3 5 7 9 11 13
+			if (valve03) {   
+					
+                    def v3_list = valve03_first.split(",")
+            		state.valve03_Timer = v3_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve03_count = v3_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
             	}
             if (valve04) {
-            		state.valve04_Timer = valve04_first[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve04_count = valve04_first[(week_day_num*2-1)] //1 3 5 7 9 11 13
+                    def v4_list = valve04_first.split(",")
+					state.valve04_Timer = v4_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve04_count = v4_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
             	}
             if (valve05) {
-            		state.valve05_Timer = valve05_first[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve05_count = valve05_first[(week_day_num*2-1)] //1 3 5 7 9 11 13
+                    def v5_list = valve05_first.split(",")
+          			state.valve05_Timer = v5_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve05_count = v5_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
             		}
             if (valve06) {
-            		state.valve06_Timer = valve06_first[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve06_count = valve06_first[(week_day_num*2-1)] //1 3 5 7 9 11 13
+                    def v6_list = valve06_first.split(",")
+					state.valve06_Timer = v6_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve06_count = v6_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
             	}
             if (valve07) {
-            		state.valve07_Timer = valve07_first[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve07_count = valve07_first[(week_day_num*2-1)] //1 3 5 7 9 11 13
+                    def v7_list = valve07_first.split(",")
+					state.valve07_Timer = v7_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve07_count = v7_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
                     }
             if (valve08) {
-            		state.valve08_Timer = valve08_first[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve08_count = valve08_first[(week_day_num*2-1)] //1 3 5 7 9 11 13
+                    def v8_list = valve08_first.split(",")
+					state.valve08_Timer = v8_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve08_count = v8_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
             	}
             
             
@@ -328,35 +338,43 @@ def correct_valves_data(order_manage_valve)
         
         if (order_manage_valve ==2)
         {
-        	state.valve01_Timer = valve01_second[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        	state.valve01_count = valve01_second[(week_day_num*2-1)] //1 3 5 7 9 11 13
+			def v1_list = valve01_second.split(",")
+        	state.valve01_Timer = v1_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        	state.valve01_count = v1_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
             if (valve02) {
-            		state.valve02_Timer = valve02_second[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve02_count = valve02_second[(week_day_num*2-1)] //1 3 5 7 9 11 13
+					def v2_list = valve02_second.split(",")
+            		state.valve02_Timer = v2_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve02_count = v2_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
                     }
             if (valve03) {
-            		state.valve03_Timer = valve03_second[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve03_count = valve03_second[(week_day_num*2-1)] //1 3 5 7 9 11 13
+					def v3_list = valve03_second.split(",")
+            		state.valve03_Timer = v3_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve03_count = v3_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
                     }
             if (valve04) {
-            		state.valve04_Timer = valve04_second[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve04_count = valve04_second[(week_day_num*2-1)] //1 3 5 7 9 11 13
+					def v4_list = valve04_second.split(",")
+					state.valve04_Timer = v4_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve04_count = v4_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
             	}
             if (valve05) {
-            		state.valve05_Timer = valve05_second[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve05_count = valve05_second[(week_day_num*2-1)] //1 3 5 7 9 11 13
+					def v5_list = valve05_second.split(",")
+					state.valve05_Timer = v5_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve05_count = v5_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
                     }
             if (valve06) {
-            		state.valve06_Timer = valve06_second[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve06_count = valve06_second[(week_day_num*2-1)] //1 3 5 7 9 11 13
+					def v6_list = valve06_second.split(",")
+					state.valve06_Timer = v6_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve06_count = v6_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
                     }
 			if (valve07) {
-            		state.valve07_Timer = valve07_second[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve07_count = valve07_second[(week_day_num*2-1)] //1 3 5 7 9 11 13
+					def v7_list = valve07_second.split(",")
+					state.valve07_Timer = v7_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve07_count = v7_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
                     }
 			if (valve08) {                    
-					state.valve08_Timer = valve08_second[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
-        			state.valve08_count = valve08_second[(week_day_num*2-1)] //1 3 5 7 9 11 13
+					def v8_list = valve08_second.split(",")
+					state.valve08_Timer = v8_list[((week_day_num-1)*2)] //0 2 4 6 8 10 12 
+        			state.valve08_count = v8_list[(week_day_num*2-1)] //1 3 5 7 9 11 13
                  }
          }
      return result            
