@@ -230,7 +230,7 @@ def set_schedulers()
     
        schedule(sch_string,wattering)
        sendMessage("watterind setuped to : $processing_time_Final")
-   		log.debug "schedules wattering for: $processing_time_Final"        
+   		log.debug "schedules wattering for: $sch_string"        
         
         }
     
@@ -242,7 +242,7 @@ def set_schedulers()
         
         schedule(sch_string_A,wattering)
         sendMessage("watterind setuped to : $processing_time_Final_A")
-        log.debug "schedules wattering for: $processing_time_Final_A"     
+        log.debug "schedules wattering for: $sch_string_A"     
         }
     }   
 }
