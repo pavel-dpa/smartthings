@@ -393,7 +393,7 @@ def correct_valves_data(order_manage_valve)
   
 }
 
-def setup_valves_schedulers(time_delay_valve)
+def setup_valves_schedulers(time_delay_valve,message_type)
 {
 	
     def result = 0
@@ -527,7 +527,7 @@ def set_schedulers(message_type)
 
     
 	 //runIn(10, setup_valves_schedulers(v_time)) 
-	def tt_2= setup_valves_schedulers(v_time)
+	def tt_2= setup_valves_schedulers(v_time,message_type)
    
       
              
