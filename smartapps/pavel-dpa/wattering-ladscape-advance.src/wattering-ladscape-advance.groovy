@@ -155,19 +155,31 @@ def max_session_valves()
 {
 	def result = 0
     
-     def list_max_val = valve01_first+valve01_second+valve02_first+valve02_second+valve03_first+valve03_second+valve04_first+valve04_second
-    	list_max_val = list_max_val + valve05_first+valve05_second+valve06_first+valve06_second+valve07_first+valve07_second+valve08_first+valve08_second
+     def list_max_val = valve01_first+","+valve01_second+","+valve02_first+","+valve02_second+","+valve03_first+","+valve03_second+","+valve04_first+","+valve04_second+","
+    	list_max_val = list_max_val+"," + valve05_first+","+valve05_second+","+valve06_first+","+valve06_second+","+valve07_first+","+valve07_second+","+valve08_first+","+valve08_second
     
     // DEFINE MAX SESSION COUNT ----- TODO ---- REORDER AFTER DAY OF WEEK AND ORDER 
-    
-    	for (int i=1; i<=list_max_val.size(); i+=2) 
-    		{
-        			def ttt= list_max_val[i]
+   		//	log.debug "list_max_val: ${list_max_val}"
 
-    	 		if (result <  ttt) {result = ttt}
+
+		def list_max_val_process = list_max_val.split(",")
+        
+    // log.debug "SIZE = ${list_max_val_process.size()}"
+ 
+    	def ttt=0
+    	for (int i=1; i<=list_max_val_process.size(); i+=2) 
+    		{
+        		if (list_max_val_process[i]) {ttt= list_max_val_process[i]}
+				//log.debug "ttt==== ${ttt}"
+
+    	 		if (result <  ttt) 
+                {
+       //        log.debug "NUM ${i} = ${ttt}"
+                result = ttt
+                }
         }
-    
-    
+        
+  
     
     return result
 
