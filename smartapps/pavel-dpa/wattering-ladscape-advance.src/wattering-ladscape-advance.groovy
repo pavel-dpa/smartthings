@@ -432,11 +432,10 @@ if (Sunrize_Sunset_check)
                 sendMessage("watterind setuped to : $sunrise_offset",message_type)
 				log.debug "schedules sunrise wattering for: $sunrise_offset"
                 }
-       		
-            //shedule for next day
-            if ((Sunrize_check_info) && (date_h>sunrise_offset))
+                else
+            if ((Sunrize_check_info) && (state.order_manage ==1) && (date_h>sunrise_offset))
             	{
-				
+				//shedule for next day
                 def Sunset_Sunrise_tomorrow = getSunriseAndSunset(sunriseOffset: Sunrize_delay_FULL, sunsetOffset: Sunset_delay, date: new Date()+1)
   				def sunrise_offset_tomorrow =Sunset_Sunrise_tomorrow.sunrise.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
 			
@@ -569,7 +568,8 @@ def wattering ()
 {
     log.debug "wattering start session ${state.VALVE_SESSION}"
     
-    
+
+
     
     
     valve_main.on()
@@ -590,8 +590,13 @@ if (state.VALVE_SESSION.toInteger()==1 && state.VALVE_NUMBER.toInteger()==1)
 
 	{
 			sendMessage ("Wattering is starting",true)
+                //update valves date in case schedule was setuped from yesterday
+			def tt_1= correct_valves_data(state.order_manage)
 
 	}
+    
+    
+    
 
 
 switch (state.VALVE_NUMBER)
