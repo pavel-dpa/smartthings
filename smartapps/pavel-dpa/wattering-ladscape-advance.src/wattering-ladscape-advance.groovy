@@ -188,7 +188,7 @@ def max_session_valves()
 
 }
 
-def dey_week_valve()
+def day_week_valve()
 {
 
 		def result = 0
@@ -214,7 +214,7 @@ def dey_week_valve()
                 	result = 3
                 	break;
                 case {it=="Thursday"}:
-                	week_day_num = 4
+                	result = 4
                 	break;
                 case {it=="Friday"}:
                 	result = 5
@@ -284,8 +284,22 @@ def order_check_valve()
                                 	result= 2
                             } else        
                             {
-                            	// next schedule BEFORE - sunrise
-                            		result = 1       
+								
+                                //to define result = 3 have to be defined after  time_second_check
+								/*
+                            		if (new Date()<MIDNIGHT)
+                                    {
+                                    	// next schedule BEFORE - sunrise	next day
+										result = 3
+
+                                    }
+                                    else
+                                    {   
+                                    // next schedule BEFORE - sunrise
+                                    */
+                                    	result = 1
+                                    //}
+                                   
                             }
 
                         } else
@@ -303,7 +317,20 @@ def order_check_valve()
 def correct_valves_data(order_manage_valve)
 {
 	def result = 0
-    def week_day_num = dey_week_valve()
+    def week_day_num = day_week_valve()
+    
+    
+    if (order_manage_valve ==3)
+    	{
+        week_day_num = week_day_num +1
+        if (week_day_num>7)
+        	{
+        		week_day_num = 1
+        	}
+         order_manage_valve ==1
+    	}
+    
+    
     
  	if (order_manage_valve ==1)
         {
@@ -414,10 +441,7 @@ if (Sunrize_Sunset_check)
     	
    		def sunset_offset = Sunset_Sunrise.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
   		def sunrise_offset =Sunset_Sunrise.sunrise.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
-        
-        /*def sunset_offset = Sunset_Sunrise.sunset
-  		def sunrise_offset = Sunset_Sunrise.sunrise
-   		*/
+          
    
    		log.debug "Sunrise - offset: ${sunrise_offset}"
    		log.debug "Sunsets + offset: ${sunset_offset}"
@@ -426,14 +450,16 @@ if (Sunrize_Sunset_check)
    
    		def date_h= new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
 			
-            //shedule for this day
-            if ((Sunrize_check_info) && (state.order_manage ==1) && (date_h<=sunrise_offset)){
-				schedule(sunrise_offset,wattering)
-                sendMessage("watterind setuped to : $sunrise_offset",message_type)
-				log.debug "schedules sunrise wattering for: $sunrise_offset"
+            //shedule for this day - state.order_manage =1 
+            if ((Sunrize_check_info) && (state.order_manage ==1) //&& (date_h<=sunrise_offset))
+            	){
+					schedule(sunrise_offset,wattering)
+                	sendMessage("watterind setuped to : $sunrise_offset",message_type)
+					log.debug "schedules sunrise wattering for: $sunrise_offset"
                 }
                 else
-            if ((Sunrize_check_info) && (state.order_manage ==1) && (date_h>sunrise_offset))
+                
+            if ((Sunrize_check_info) && (state.order_manage == 3))// (state.order_manage ==1) &&(date_h>sunrise_offset))
             	{
 				//shedule for next day
                 def Sunset_Sunrise_tomorrow = getSunriseAndSunset(sunriseOffset: Sunrize_delay_FULL, sunsetOffset: Sunset_delay, date: new Date()+1)
@@ -443,6 +469,7 @@ if (Sunrize_Sunset_check)
         		schedule(sunrise_offset_tomorrow,wattering)
                	sendMessage("watterind setuped to next day : $sunrise_offset_tomorrow",message_type)
         		log.debug "schedules sunset wattering for next day: $sunrise_offset_tomorrow"
+                state.order_manage =1
                 }
             
             
@@ -463,8 +490,8 @@ if (Sunrize_Sunset_check)
            
     
     
-   			 if ((start_before_W) && (state.order_manage ==1)){
-
+   			 if ((start_before_W) && (state.order_manage ==1 || state.order_manage ==3)){
+						
                         def processing_time = Date.parse("yyyy-MM-dd'T'HH:mm:ss.SSSZ", start_before_W)
                         def start_b_w_time = new Date( processing_time.time - time_delay_valve*60 * 1000).format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
                         def processing_time_Final = Date.parse("yyyy-MM-dd'T'HH:mm:ss", start_b_w_time)
@@ -475,7 +502,8 @@ if (Sunrize_Sunset_check)
 
                        schedule(sch_string,wattering)
                        sendMessage("watterind setuped to : $processing_time_Final",message_type)
-                        log.debug "schedules wattering for: $processing_time_Final"        
+                        log.debug "schedules wattering for: $processing_time_Final" 
+                        state.order_manage ==1
         
         				}
     
@@ -525,11 +553,12 @@ def set_schedulers(message_type)
     state.MAX_VALVE_SESSION = max_session_valves()
 	log.debug "Max sessions count: ${state.MAX_VALVE_SESSION}"
 	
-    def week_day_num = dey_week_valve()
+    def week_day_num = day_week_valve()
 	log.debug "DAY OF WEEK: ${week_day_num}"
 
     	
-        
+    //line 288 right define where and right usage state #3    
+    // remove before run check line 624
     //Define next schedule for next run
     state.order_manage = order_check_valve()
     log.debug "Order runs: ${state.order_manage}"
@@ -590,7 +619,9 @@ if (state.VALVE_SESSION.toInteger()==1 && state.VALVE_NUMBER.toInteger()==1)
 
 	{
 			sendMessage ("Wattering is starting",true)
-                //update valves date in case schedule was setuped from yesterday
+            
+            // NOT REQUIRED IF STAGE  = 3 works
+            //update valves date in case schedule was setuped from yesterday
 			def tt_1= correct_valves_data(state.order_manage)
 
 	}
