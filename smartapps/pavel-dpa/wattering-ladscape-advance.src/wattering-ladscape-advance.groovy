@@ -130,7 +130,7 @@ def initialize() {
     
     /* TO DO
     #1 - 	scheduler by day of week ????
-        	- less empty session runs
+        ++++++++++	- less empty session runs
             - maybe easy scheduling
      		 -flexible time for each day
             
