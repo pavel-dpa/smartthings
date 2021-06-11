@@ -132,7 +132,7 @@ def initialize() {
     #1 - 	scheduler by day of week ????
         	- less empty session runs
             - maybe easy scheduling
-     		-flexible time for each day
+     		 -flexible time for each day
             
     #2 -  Symetric waterind one day morning one day evening
     
@@ -160,11 +160,15 @@ def max_session_valves()
 {
 	def result = 0
     
-     def list_max_val = valve01_first+","+valve01_second+","+valve02_first+","+valve02_second+","+valve03_first+","+valve03_second+","+valve04_first+","+valve04_second
-    	list_max_val = list_max_val+"," + valve05_first+","+valve05_second+","+valve06_first+","+valve06_second+","+valve07_first+","+valve07_second+","+valve08_first+","+valve08_second
+     //def list_max_val = valve01_first+","+valve01_second+","+valve02_first+","+valve02_second+","+valve03_first+","+valve03_second+","+valve04_first+","+valve04_second
+    //	list_max_val = list_max_val+"," + valve05_first+","+valve05_second+","+valve06_first+","+valve06_second+","+valve07_first+","+valve07_second+","+valve08_first+","+valve08_second
+    
+    
+    def list_max_val = state.valve01_count+","+state.valve02_count+","+state.valve03_count+","+state.valve04_count+","+state.valve05_count+","+state.valve06_count+","+state.valve07_count+","+state.valve08_count
+    
     
     // DEFINE MAX SESSION COUNT ----- TODO ---- REORDER AFTER DAY OF WEEK AND ORDER 
-   		//	log.debug "list_max_val: ${list_max_val}"
+   			log.debug "list_max_val: ${list_max_val}"
 
 
 		def list_max_val_process = list_max_val.split(",")
@@ -172,7 +176,8 @@ def max_session_valves()
     // log.debug "SIZE = ${list_max_val_process.size()}"
  
     	def ttt=0
-    	for (int i=1; i<=list_max_val_process.size(); i+=2) 
+    	//for (int i=1; i<=list_max_val_process.size(); i+=2) 
+		for (int i=1; i<list_max_val_process.size(); i++)         
     		{
         //		log.debug "i==== $i"
         		if (list_max_val_process[i]) {ttt= list_max_val_process[i]}
@@ -191,7 +196,7 @@ def max_session_valves()
 
 }
 
-def dey_week_valve()
+def day_week_valve()
 {
 
 		def result = 0
@@ -287,7 +292,6 @@ def order_check_valve()
                                 	result= 2
                             } else        
                             {
-
 								
                                 //to define result = 3 have to be defined after  time_second_check
 								
@@ -306,7 +310,6 @@ def order_check_valve()
                                     	result = 1
                                     }
                                    
-
                             }
 
                         } else
@@ -362,7 +365,6 @@ def order_check_valve()
 def correct_valves_data(order_manage_valve)
 {
 	def result = 0
-
     def week_day_num = day_week_valve()
     
     
@@ -379,7 +381,6 @@ def correct_valves_data(order_manage_valve)
     	}
     
         log.debug "Second PRE-ORDER: ${order_manage_valve}"
-
 
     
  	if (order_manage_valve ==1)
@@ -491,10 +492,7 @@ if (Sunrize_Sunset_check)
     	
    		def sunset_offset = Sunset_Sunrise.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
   		def sunrise_offset =Sunset_Sunrise.sunrise.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
-        
-        /*def sunset_offset = Sunset_Sunrise.sunset
-  		def sunrise_offset = Sunset_Sunrise.sunrise
-   		*/
+          
    
    		log.debug "Sunrise - offset: ${sunrise_offset}"
    		log.debug "Sunsets + offset: ${sunset_offset}"
@@ -503,14 +501,16 @@ if (Sunrize_Sunset_check)
    
    		def date_h= new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
 			
-            //shedule for this day
-            if ((Sunrize_check_info) && (state.order_manage ==1) && (date_h<=sunrise_offset)){
-				schedule(sunrise_offset,wattering)
-                sendMessage("watterind setuped to : $sunrise_offset",message_type)
-				log.debug "schedules sunrise wattering for: $sunrise_offset"
+            //shedule for this day - state.order_manage =1 
+            if ((Sunrize_check_info) && (state.order_manage ==1) //&& (date_h<=sunrise_offset))
+            	){
+					schedule(sunrise_offset,wattering)
+                	sendMessage("watterind setuped to : $sunrise_offset",message_type)
+					log.debug "schedules sunrise wattering for: $sunrise_offset"
                 }
                 else
-            if ((Sunrize_check_info) && (state.order_manage ==1) && (date_h>sunrise_offset))
+                
+            if ((Sunrize_check_info) && (state.order_manage == 3))// (state.order_manage ==1) &&(date_h>sunrise_offset))
             	{
 				//shedule for next day
                 def Sunset_Sunrise_tomorrow = getSunriseAndSunset(sunriseOffset: Sunrize_delay_FULL, sunsetOffset: Sunset_delay, date: new Date()+1)
@@ -520,6 +520,7 @@ if (Sunrize_Sunset_check)
         		schedule(sunrise_offset_tomorrow,wattering)
                	sendMessage("watterind setuped to next day : $sunrise_offset_tomorrow",message_type)
         		log.debug "schedules sunset wattering for next day: $sunrise_offset_tomorrow"
+                state.order_manage =1
                 }
             
             
@@ -540,8 +541,8 @@ if (Sunrize_Sunset_check)
            
     
     
-   			 if ((start_before_W) && (state.order_manage ==1)){
-
+   			 if ((start_before_W) && (state.order_manage ==1 || state.order_manage ==3)){
+						
                         def processing_time = Date.parse("yyyy-MM-dd'T'HH:mm:ss.SSSZ", start_before_W)
                         def start_b_w_time = new Date( processing_time.time - time_delay_valve*60 * 1000).format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
                         def processing_time_Final = Date.parse("yyyy-MM-dd'T'HH:mm:ss", start_b_w_time)
@@ -552,7 +553,8 @@ if (Sunrize_Sunset_check)
 
                        schedule(sch_string,wattering)
                        sendMessage("watterind setuped to : $processing_time_Final",message_type)
-                        log.debug "schedules wattering for: $processing_time_Final"        
+                        log.debug "schedules wattering for: $processing_time_Final" 
+                        state.order_manage ==1
         
         				}
     
@@ -599,18 +601,14 @@ def set_schedulers(message_type)
     state.VALVE_SESSION = 1
     
     
-    state.MAX_VALVE_SESSION = max_session_valves()
-	log.debug "Max sessions count: ${state.MAX_VALVE_SESSION}"
 	
-    def week_day_num = dey_week_valve()
+    def week_day_num = day_week_valve()
 	log.debug "DAY OF WEEK: ${week_day_num}"
 
     	
-
     //line 288 right define where and right usage state #3    
     // remove before run check line 624
     
-
     //Define next schedule for next run
     state.order_manage = order_check_valve()
     log.debug "Order runs: ${state.order_manage}"
@@ -619,7 +617,8 @@ def set_schedulers(message_type)
    	//runIn(10,correct_valves_data(state.order_manage))    
     def tt_1= correct_valves_data(state.order_manage)
         
-        
+    state.MAX_VALVE_SESSION = max_session_valves()    
+    log.debug "Max sessions count: ${state.MAX_VALVE_SESSION}"
         
 		//calculate the offset
    		def v_time = calculate_the_offset()
@@ -675,7 +674,6 @@ if (state.VALVE_SESSION.toInteger()==1 && state.VALVE_NUMBER.toInteger()==1)
             // NOT REQUIRED IF STAGE  = 3 works
             //update valves date in case schedule was setuped from yesterday
 			//def tt_1= correct_valves_data(state.order_manage)
-
 
 	}
     
@@ -927,9 +925,7 @@ def sendMessage(message , message_type)
    	else
   	{
    		sendSms(phone, stamp + "$app.label " + message)
-  	}
-    */
+  	}*/
     
     log.debug "MESSAGE: $stamp $app.label $message"
-    
 }
