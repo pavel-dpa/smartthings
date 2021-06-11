@@ -18,6 +18,7 @@ definition(
     name: "wattering ladscape_advance",
     namespace: "pavel-dpa",
     author: "Pavlo Dubovyk",
+    pausable: true,
     description: "advance control watering in my terirory",
     category: "Convenience",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
