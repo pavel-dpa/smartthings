@@ -59,46 +59,49 @@ preferences {
     section("Valves to adjust...")
     {
 		input "valve_main", "capability.switch",title: "Main valve", required: true, multiple: false
-        
+
+		//input "water_valves", "capability.switch",title: "Valves", required: true, multiple: true
+
+
         input "valve01", "capability.switch", title: "Zone one valve", required: true, multiple: false
-		input "valve01_first", type: "text" , title: "Zone one morning run", required: false, defaultValue: "3,3,3,3,3,3,3,3,3,3,3,3,3,3"
-        input "valve01_second", type: "text" , title: "Zone one evening run",required: false, defaultValue: "3,3,3,3,3,3,3,3,3,3,3,3,3,3"        
+		input "valve01_first", type: "text" , title: "Zone one morning run", required: false, defaultValue: "5,2,5,2,5,2,5,2,5,2,5,2,5,2"
+        input "valve01_second", type: "text" , title: "Zone one evening run",required: false, defaultValue: "5,1,5,1,5,1,5,1,5,1,5,1,5,1"        
         
         input "valve02", "capability.switch", title: "Zone two valve", required: false, multiple: false
-        input "valve02_first", type: "text" , title: "Zone two morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
-        input "valve02_second", type: "text" , title: "Zone two evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"        
+        input "valve02_first", type: "text" , title: "Zone two morning run", required: false, defaultValue: "4,2,4,2,4,2,4,2,4,2,4,2,4,2"
+        input "valve02_second", type: "text" , title: "Zone two evening run",required: false, defaultValue: "3,2,3,2,3,2,3,2,3,2,3,2,3,2"        
         
-
+	
         
         input "valve03", "capability.switch", title: "Zone Three valve", required: false, multiple: false
-      	input "valve03_first", type: "text" , title: "Zone Three morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
-        input "valve03_second", type: "text" , title: "Zone Three evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"              
+      	input "valve03_first", type: "text" , title: "Zone Three morning run", required: false, defaultValue: "0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+        input "valve03_second", type: "text" , title: "Zone Three evening run",required: false, defaultValue: "0,0,0,0,0,0,0,0,0,0,0,0,0,0"              
 
         
         input "valve04", "capability.switch", title: "Zone Four valve", required: false, multiple: false
-      	input "valve04_first", type: "text" , title: "Zone Four morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
-        input "valve04_second", type: "text" , title: "Zone Four evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"         
+      	input "valve04_first", type: "text" , title: "Zone Four morning run", required: false, defaultValue: "5,1,10,1,5,1,10,1,5,1,7,1,5,1"
+        input "valve04_second", type: "text" , title: "Zone Four evening run",required: false, defaultValue: "5,1,0,1,5,1,0,1,5,1,0,1,5,1"         
         
         
         input "valve05", "capability.switch", title: "Zone Five valve", required: false, multiple: false
-      	input "valve05_first", type: "text" , title: "Zone Five morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
-        input "valve05_second", type: "text" , title: "Zone Five evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"         
+      	input "valve05_first", type: "text" , title: "Zone Five morning run", required: false, defaultValue: "7,3,7,3,7,3,7,3,7,3,7,3,7,3"
+        input "valve05_second", type: "text" , title: "Zone Five evening run",required: false, defaultValue: "5,2,5,2,5,2,5,2,5,2,5,2,5,2"         
         
         
         input "valve06", "capability.switch", title: "Zone Six valve", required: false, multiple: false
-        input "valve06_first", type: "text" , title: "Zone Six morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
-        input "valve06_second", type: "text" , title: "Zone Six evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"         
+        input "valve06_first", type: "text" , title: "Zone Six morning run", required: false, defaultValue: "0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+        input "valve06_second", type: "text" , title: "Zone Six evening run",required: false, defaultValue: "0,0,0,0,0,0,0,0,0,0,0,0,0,0"         
         
         
         input "valve07", "capability.switch", title: "Zone Seven valve", required: false, multiple: false
-		input "valve07_first", type: "text" , title: "Zone Seven morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
-        input "valve07_second", type: "text" , title: "Zone Seven evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"         
+		input "valve07_first", type: "text" , title: "Zone Seven morning run", required: false, defaultValue: "6,4,6,4,6,4,6,4,6,4,6,4,6,4"
+        input "valve07_second", type: "text" , title: "Zone Seven evening run",required: false, defaultValue: "5,2,5,2,5,2,5,2,5,2,5,2,5,2"         
 
         
       
         input "valve08", "capability.switch", title: "Zone Eight valve", required: false, multiple: false
-		input "valve08_first", type: "text" , title: "Zone Eight morning run", required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"
-        input "valve08_second", type: "text" , title: "Zone Eight evening run",required: false, defaultValue: "3,3, 3,3, 3,3, 3,3, 3,3, 3,3, 3,3"      
+		input "valve08_first", type: "text" , title: "Zone Eight morning run", required: false, defaultValue: "7,3,7,3,7,3,7,3,7,3,7,3,7,3"
+        input "valve08_second", type: "text" , title: "Zone Eight evening run",required: false, defaultValue: "4,2,4,2,4,2,4,2,4,2,4,2,4,2"      
         
 	}
 	section("Send Notifications?") {
@@ -286,31 +289,72 @@ def order_check_valve()
                             {
 								
                                 //to define result = 3 have to be defined after  time_second_check
-								/*
-                            		if (new Date()<MIDNIGHT)
+								
+                                 def midnightTime = (new Date().clearTime() + 1)
+                                     log.debug "midnightTime : ${midnightTime}"
+
+								def between_second = timeOfDayIsBetween(time_first_check, midnightTime, new Date(), location.timeZone)
+									//NOT CORRECT
+                            		if (between_second)
                                     {
                                     	// next schedule BEFORE - sunrise	next day
 										result = 3
-
                                     }
                                     else
                                     {   
                                     // next schedule BEFORE - sunrise
-                                    */
                                     	result = 1
-                                    //}
+                                    }
                                    
                             }
 
                         } else
                         {
-                           if (time_first_check) {result = 1}
+						
+						   if (time_first_check) 
+                           	{
+                           		def midnightTime = (new Date().clearTime() + 1)
+                           		def between_3 = timeOfDayIsBetween(time_first_check, midnightTime, new Date(), location.timeZone)
+                                if (between_3)
+                                    {
+                                    	// next schedule BEFORE - sunrise	next day
+										result = 3
+                                    }
+                                    else
+                                    {   
+                                    // next schedule BEFORE - sunrise
+                                    	result = 1
+                                    }
+                                
+							}
+                           
                         	else
-                        	if (time_second_check) {result = 2}
+                        	if (time_second_check) 
+                            {
+                            	
+                                def midnightTime = (new Date().clearTime() + 1)
+                           		def between_4 = timeOfDayIsBetween(time_second_check, midnightTime, new Date(), location.timeZone)
+                                if (between_4)
+                                    {
+                                    	// next schedule BEFORE - sunrise	next day
+										result = 3
+                                    }
+                                    else
+                                    {   
+                                    // next schedule BEFORE - sunrise
+                                    	result = 2
+                                    }
+                                
+							}
+                            
+                            
 
 						}
+	
+    log.debug "PRE-ORDER: ${result}"
 
-    return result            
+    return result       
+    
 
 }
 
@@ -322,15 +366,18 @@ def correct_valves_data(order_manage_valve)
     
     if (order_manage_valve ==3)
     	{
+		
+        order_manage_valve =1
+        
         week_day_num = week_day_num +1
         if (week_day_num>7)
         	{
         		week_day_num = 1
         	}
-         order_manage_valve ==1
     	}
     
-    
+        log.debug "Second PRE-ORDER: ${order_manage_valve}"
+
     
  	if (order_manage_valve ==1)
         {
@@ -559,6 +606,7 @@ def set_schedulers(message_type)
     	
     //line 288 right define where and right usage state #3    
     // remove before run check line 624
+    
     //Define next schedule for next run
     state.order_manage = order_check_valve()
     log.debug "Order runs: ${state.order_manage}"
@@ -622,7 +670,7 @@ if (state.VALVE_SESSION.toInteger()==1 && state.VALVE_NUMBER.toInteger()==1)
             
             // NOT REQUIRED IF STAGE  = 3 works
             //update valves date in case schedule was setuped from yesterday
-			def tt_1= correct_valves_data(state.order_manage)
+			//def tt_1= correct_valves_data(state.order_manage)
 
 	}
     
@@ -641,11 +689,11 @@ switch (state.VALVE_NUMBER)
         	
         	valve01.on()
         	runIn(v1_time*60,valves_off)      
-        } else {runIn(1,valves_off)}
+        } else {runIn(10,valves_off)}
         	
        } else
         	{         // GO NEXT VALVE
-        	runIn(1,valves_off)
+        	runIn(10,valves_off)
             }
  	  break;
  case {it==2}:
@@ -657,10 +705,10 @@ switch (state.VALVE_NUMBER)
             log.debug "wattering v2 start for, min $v2_time"
         	valve02.on()
         	runIn(v2_time*60,valves_off)    
-         } else {runIn(1,valves_off)}
+         } else {runIn(10,valves_off)}
    		} else {
          // GO NEXT VALVE
-         runIn(1,valves_off)}
+         runIn(10,valves_off)}
     
     break; 
 	
@@ -673,8 +721,8 @@ switch (state.VALVE_NUMBER)
                   log.debug "wattering v3 start for, min $v3_time"
        		  valve03.on()
         		  runIn(v3_time*60,valves_off) 
-        	} else {runIn(1,valves_off)}
-        } else {runIn(1,valves_off)}
+        	} else {runIn(10,valves_off)}
+        } else {runIn(10,valves_off)}
    	break; 
 	
  case {it==4}:
@@ -686,8 +734,8 @@ switch (state.VALVE_NUMBER)
                 log.debug "wattering v4 start for, min $v4_time"
                valve04.on()
                 runIn(v4_time*60,valves_off)    
-        	} else {runIn(1,valves_off)}
-        } else {runIn(1,valves_off)}
+        	} else {runIn(10,valves_off)}
+        } else {runIn(10,valves_off)}
    	break; 
 	
  case {it==5}:
@@ -699,8 +747,8 @@ switch (state.VALVE_NUMBER)
             log.debug "wattering v5 start for, min $v5_time"
            valve05.on()
             runIn(v5_time*60,valves_off)    
-       	  } else {runIn(1,valves_off)}
-        } else {runIn(1,valves_off)}
+       	  } else {runIn(10,valves_off)}
+        } else {runIn(10,valves_off)}
    	break; 
 	
  case {it==6}:
@@ -712,8 +760,8 @@ switch (state.VALVE_NUMBER)
                 log.debug "wattering v6 start for, min $v6_time"
                valve06.on()
                 runIn(v6_time*60,valves_off)    
-        	} else {runIn(1,valves_off)}
-        } else {runIn(1,valves_off)}
+        	} else {runIn(10,valves_off)}
+        } else {runIn(10,valves_off)}
    	break; 
 	
  case {it==7}:
@@ -725,8 +773,8 @@ switch (state.VALVE_NUMBER)
             log.debug "wattering v7 start for, min $v7_time"
            valve07.on()
             runIn(v7_time*60,valves_off)    
-        	} else {runIn(1,valves_off)}
-        } else {runIn(1,valves_off)}
+        	} else {runIn(10,valves_off)}
+        } else {runIn(10,valves_off)}
    	break; 
 	
  case {it==8}:
@@ -738,11 +786,11 @@ switch (state.VALVE_NUMBER)
             log.debug "wattering v8 start for, min $v8_time"
             valve08.on()
             runIn(v8_time*60,valves_off)    
-        	} else {runIn(1,valves_off)}
+        	} else {runIn(10,valves_off)}
         } else {
         
         log.debug "valve v8 exiting"
-        runIn(1,valves_off)
+        runIn(10,valves_off)
         }
    	break; 
    }
@@ -797,7 +845,7 @@ def valves_off()
         {
 
           log.debug "GO TO NEXT VALVE ${state.VALVE_NUMBER}"
-          runIn(1,wattering)
+          runIn(10,wattering)
         }
         else
         { 
@@ -811,7 +859,7 @@ def valves_off()
                 {
 
                     log.debug "EXIT"
-                    runIn(1,vallve_all_off)    
+                    runIn(10,vallve_all_off)    
 
                 }
                 else
@@ -820,7 +868,7 @@ def valves_off()
                 log.debug "Next session starting ${state.VALVE_SESSION} from ${state.MAX_VALVE_SESSION}"
 
                 //continue wattering - next session
-                runIn(1,wattering) 
+                runIn(10,wattering) 
 
                 }
         }
