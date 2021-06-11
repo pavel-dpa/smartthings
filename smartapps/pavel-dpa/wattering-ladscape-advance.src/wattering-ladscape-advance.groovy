@@ -294,7 +294,6 @@ def order_check_valve()
                                      log.debug "midnightTime : ${midnightTime}"
 
 								def between_second = timeOfDayIsBetween(time_first_check, midnightTime, new Date(), location.timeZone)
-									//NOT CORRECT
                             		if (between_second)
                                     {
                                     	// next schedule BEFORE - sunrise	next day
