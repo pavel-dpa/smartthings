@@ -600,7 +600,8 @@ def set_schedulers(message_type)
 	unschedule()
 	state.VALVE_NUMBER = 1
     state.VALVE_SESSION = 1
-    
+	state.VALVE_NUMBER_open = 0
+
     
 	
     def week_day_num = day_week_valve()
@@ -645,13 +646,115 @@ def sheduler_24_mid(message_type)
 }
 */
 
+def valve_check_on_off()
+{
+    valve_main.on()
+
+        if ( state.VALVE_NUMBER_open != 0)
+            {
+                switch (state.VALVE_NUMBER_open)
+                    {
+                        case {it==1}:
+                             if (valve01) {valve01.on()}
+    						 if (valve02) {valve02.off()}
+						     if (valve03) {valve03.off()}
+    						 if (valve04) {valve04.off()}
+    						 if (valve05) {valve05.off()}
+   							 if (valve06) {valve06.off()}
+  							 if (valve07) {valve07.off()}
+   							 if (valve08) {valve08.off()}
+                            break;
+                        case {it==2}:
+                             if (valve01) {valve01.off()}
+    						 if (valve02) {valve02.on()}
+						     if (valve03) {valve03.off()}
+    						 if (valve04) {valve04.off()}
+    						 if (valve05) {valve05.off()}
+   							 if (valve06) {valve06.off()}
+  							 if (valve07) {valve07.off()}
+   							 if (valve08) {valve08.off()}
+                            break;
+                        case {it==3}:
+ 							 if (valve01) {valve01.off()}
+    						 if (valve02) {valve02.off()}
+						     if (valve03) {valve03.on()}
+    						 if (valve04) {valve04.off()}
+    						 if (valve05) {valve05.off()}
+   							 if (valve06) {valve06.off()}
+  							 if (valve07) {valve07.off()}
+   							 if (valve08) {valve08.off()}
+                             break;
+                        case {it==4}:
+                             if (valve01) {valve01.off()}
+    						 if (valve02) {valve02.off()}
+						     if (valve03) {valve03.off()}
+    						 if (valve04) {valve04.on()}
+    						 if (valve05) {valve05.off()}
+   							 if (valve06) {valve06.off()}
+  							 if (valve07) {valve07.off()}
+   							 if (valve08) {valve08.off()}
+                            break;
+                        case {it==5}:
+                             if (valve01) {valve01.off()}
+    						 if (valve02) {valve02.off()}
+						     if (valve03) {valve03.off()}
+    						 if (valve04) {valve04.off()}
+    						 if (valve05) {valve05.on()}
+   							 if (valve06) {valve06.off()}
+  							 if (valve07) {valve07.off()}
+   							 if (valve08) {valve08.off()}
+                            break;
+                        case {it==6}:
+                             if (valve01) {valve01.off()}
+    						 if (valve02) {valve02.off()}
+						     if (valve03) {valve03.off()}
+    						 if (valve04) {valve04.off()}
+    						 if (valve05) {valve05.off()}
+   							 if (valve06) {valve06.on()}
+  							 if (valve07) {valve07.off()}
+   							 if (valve08) {valve08.off()}
+                            break;
+                        case {it==7}:
+                             if (valve01) {valve01.off()}
+    						 if (valve02) {valve02.off()}
+						     if (valve03) {valve03.off()}
+    						 if (valve04) {valve04.off()}
+    						 if (valve05) {valve05.off()}
+   							 if (valve06) {valve06.off()}
+  							 if (valve07) {valve07.on()}
+   							 if (valve08) {valve08.off()}
+                            break;                    
+						case {it==8}:
+                             if (valve01) {valve01.off()}
+    						 if (valve02) {valve02.off()}
+						     if (valve03) {valve03.off()}
+    						 if (valve04) {valve04.off()}
+    						 if (valve05) {valve05.off()}
+   							 if (valve06) {valve06.off()}
+  							 if (valve07) {valve07.off()}
+   							 if (valve08) {valve08.on()}
+                            break;  
+                    }
+
+            }
+}
+
 def wattering ()
 {
     log.debug "wattering start session ${state.VALVE_SESSION}"
     
 
 
+    /* check weather
+     if mm till last 24 hours > 6 - cancel = wait 120 sec - reschedule
+     			
+     			////mySwitch.on([delay: 2000]) 2 second
+      if next 12 hours >6 mm - cancel   
+      
+      if 1<last 12 + next 12 summ <=3  then watering 50% 
     
+      if last 12 + next 12 summ<1 then watering 100%
+    */
     
     valve_main.on()
 	log.debug "valve_main ON"
@@ -672,6 +775,10 @@ if (state.VALVE_SESSION.toInteger()==1 && state.VALVE_NUMBER.toInteger()==1)
 	{
 			sendMessage ("Wattering is starting",true)
             
+            state.VALVE_NUMBER_open = 0
+            
+            
+            runEvery1Minute(valve_check_on_off)
             // NOT REQUIRED IF STAGE  = 3 works
             //update valves date in case schedule was setuped from yesterday
 			//def tt_1= correct_valves_data(state.order_manage)
@@ -690,14 +797,14 @@ switch (state.VALVE_NUMBER)
         {
         	def v1_time = state.valve01_Timer.toInteger()
             log.debug "wattering v1 start for, min $v1_time"
-        	
+        	state.VALVE_NUMBER_open = 1
         	valve01.on()
         	runIn(v1_time*60,valves_off)      
-        } else {runIn(10,valves_off)}
+        } else {runIn(1,valves_off)}
         	
        } else
         	{         // GO NEXT VALVE
-        	runIn(10,valves_off)
+        	runIn(1,valves_off)
             }
  	  break;
  case {it==2}:
@@ -708,11 +815,12 @@ switch (state.VALVE_NUMBER)
         	def v2_time = state.valve02_Timer.toInteger()
             log.debug "wattering v2 start for, min $v2_time"
         	valve02.on()
+			state.VALVE_NUMBER_open = 2
         	runIn(v2_time*60,valves_off)    
-         } else {runIn(10,valves_off)}
+         } else {runIn(1,valves_off)}
    		} else {
          // GO NEXT VALVE
-         runIn(10,valves_off)}
+         runIn(1,valves_off)}
     
     break; 
 	
@@ -723,10 +831,12 @@ switch (state.VALVE_NUMBER)
                   
         		  def v3_time = state.valve03_Timer.toInteger()
                   log.debug "wattering v3 start for, min $v3_time"
+	        	state.VALVE_NUMBER_open = 3
+                  
        		  valve03.on()
         		  runIn(v3_time*60,valves_off) 
-        	} else {runIn(10,valves_off)}
-        } else {runIn(10,valves_off)}
+        	} else {runIn(1,valves_off)}
+        } else {runIn(1,valves_off)}
    	break; 
 	
  case {it==4}:
@@ -737,9 +847,10 @@ switch (state.VALVE_NUMBER)
                 def v4_time = state.valve04_Timer.toInteger()
                 log.debug "wattering v4 start for, min $v4_time"
                valve04.on()
+                       	state.VALVE_NUMBER_open = 4
                 runIn(v4_time*60,valves_off)    
-        	} else {runIn(10,valves_off)}
-        } else {runIn(10,valves_off)}
+        	} else {runIn(1,valves_off)}
+        } else {runIn(1,valves_off)}
    	break; 
 	
  case {it==5}:
@@ -750,9 +861,10 @@ switch (state.VALVE_NUMBER)
             def v5_time = state.valve05_Timer.toInteger()
             log.debug "wattering v5 start for, min $v5_time"
            valve05.on()
+                   	state.VALVE_NUMBER_open = 5
             runIn(v5_time*60,valves_off)    
-       	  } else {runIn(10,valves_off)}
-        } else {runIn(10,valves_off)}
+       	  } else {runIn(1,valves_off)}
+        } else {runIn(1,valves_off)}
    	break; 
 	
  case {it==6}:
@@ -763,9 +875,10 @@ switch (state.VALVE_NUMBER)
                 def v6_time = state.valve06_Timer.toInteger()
                 log.debug "wattering v6 start for, min $v6_time"
                valve06.on()
+                       	state.VALVE_NUMBER_open = 6
                 runIn(v6_time*60,valves_off)    
-        	} else {runIn(10,valves_off)}
-        } else {runIn(10,valves_off)}
+        	} else {runIn(1,valves_off)}
+        } else {runIn(1,valves_off)}
    	break; 
 	
  case {it==7}:
@@ -776,9 +889,10 @@ switch (state.VALVE_NUMBER)
             def v7_time = state.valve07_Timer.toInteger()
             log.debug "wattering v7 start for, min $v7_time"
            valve07.on()
+                   	state.VALVE_NUMBER_open = 7
             runIn(v7_time*60,valves_off)    
-        	} else {runIn(10,valves_off)}
-        } else {runIn(10,valves_off)}
+        	} else {runIn(1,valves_off)}
+        } else {runIn(1,valves_off)}
    	break; 
 	
  case {it==8}:
@@ -789,12 +903,13 @@ switch (state.VALVE_NUMBER)
             def v8_time = state.valve08_Timer.toInteger()
             log.debug "wattering v8 start for, min $v8_time"
             valve08.on()
+                    	state.VALVE_NUMBER_open = 8
             runIn(v8_time*60,valves_off)    
-        	} else {runIn(10,valves_off)}
+        	} else {runIn(1,valves_off)}
         } else {
         
         log.debug "valve v8 exiting"
-        runIn(10,valves_off)
+        runIn(1,valves_off)
         }
    	break; 
    }
@@ -849,7 +964,7 @@ def valves_off()
         {
 
           log.debug "GO TO NEXT VALVE ${state.VALVE_NUMBER}"
-          runIn(10,wattering)
+          runIn(1,wattering)
         }
         else
         { 
@@ -863,7 +978,7 @@ def valves_off()
                 {
 
                     log.debug "EXIT"
-                    runIn(10,vallve_all_off)    
+                    runIn(1,vallve_all_off)    
 
                 }
                 else
@@ -872,7 +987,7 @@ def valves_off()
                 log.debug "Next session starting ${state.VALVE_SESSION} from ${state.MAX_VALVE_SESSION}"
 
                 //continue wattering - next session
-                runIn(10,wattering) 
+                runIn(1,wattering) 
 
                 }
         }
