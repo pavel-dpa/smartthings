@@ -253,13 +253,14 @@ def order_check_valve()
          //runIn(10,correct_valves_data(1))    
 	   	def tt_3 = correct_valves_data(1)
 		//calculate the offset to check
-   		def v_time = calculate_the_offset()
+   		def v_time_sec = calculate_the_offset()
     
+    	def  v_time_min = v_time_sec.toInteger()/60
 
                 
 		 if (Sunrize_Sunset_check)
     		{
-				def  Sunrize_delay_FULL = -1*(Sunrize_delay+v_time)
+				def  Sunrize_delay_FULL = -1*(Sunrize_delay+v_time_min)
     			def Sunset_Sunrise = getSunriseAndSunset(sunriseOffset: Sunrize_delay_FULL, sunsetOffset: Sunset_delay)
 				log.debug "GET SUN SET: ${Sunset_Sunrise}"
 				
@@ -480,10 +481,15 @@ def setup_valves_schedulers(time_delay_valve,message_type)
 	
     def result = 0
     
+    def time_delay_valve_min = time_delay_valve.toInteger() / 60
+	
+    log.debug "Offset in min : ${time_delay_valve_min}"
+
+    
 if (Sunrize_Sunset_check)
     {
     	
-        def  Sunrize_delay_FULL = -1*(Sunrize_delay+time_delay_valve)
+        def  Sunrize_delay_FULL = -1*(Sunrize_delay+time_delay_valve_min)
 
     
    		def Sunset_Sunrise = getSunriseAndSunset(sunriseOffset: Sunrize_delay_FULL, sunsetOffset: Sunset_delay)
@@ -545,7 +551,7 @@ if (Sunrize_Sunset_check)
    			 if ((start_before_W) && (state.order_manage ==1 || state.order_manage ==3)){
 						
                         def processing_time = Date.parse("yyyy-MM-dd'T'HH:mm:ss.SSSZ", start_before_W)
-                        def start_b_w_time = new Date( processing_time.time - time_delay_valve*60 * 1000).format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+                        def start_b_w_time = new Date( processing_time.time - time_delay_valve * 1000).format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
                         def processing_time_Final = Date.parse("yyyy-MM-dd'T'HH:mm:ss", start_b_w_time)
                         //def sch_string =  "00"+processing_time_Final.hours + " " + processing_time_Final.minutes+ " * * * ?"	
                         def sch_string =  "0 "+processing_time_Final.minutes+" "+processing_time_Final.hours + " ? * MON-SUN"	
@@ -588,6 +594,14 @@ def calculate_the_offset()
     if (state.valve06_Timer) {result = result+state.valve06_Timer.toInteger()*state.valve06_count.toInteger()}
     if (state.valve07_Timer) {result = result+state.valve07_Timer.toInteger()*state.valve07_count.toInteger()}
     if (state.valve08_Timer) {result = result+state.valve08_Timer.toInteger()*state.valve08_count.toInteger()}
+
+
+	//45 sec per session even if valves off
+    result = result.toInteger() * 60  + state.MAX_VALVE_SESSION.toInteger() * 45
+	// result in sec
+	log.debug "Offset in sec ${result}"
+
+    
 
     return result            
 
@@ -770,9 +784,21 @@ def wattering ()
     if (valve08) {valve08.off()}
 
 
+
+ def forecast_6 = 0
+ def past_12 = 0
+
+
 if (state.VALVE_SESSION.toInteger()==1 && state.VALVE_NUMBER.toInteger()==1) 
 
 	{
+    	
+        forecast_6 = accuweather_forecast_12()
+        past_12 = accuweather_Historical_Current()
+
+				log.debug "past mm = $past_12"
+   				log.debug "forecast mm = $forecast_6"
+    
 			sendMessage ("Wattering is starting",true)
             
             state.VALVE_NUMBER_open = 0
@@ -786,133 +812,154 @@ if (state.VALVE_SESSION.toInteger()==1 && state.VALVE_NUMBER.toInteger()==1)
 	}
     
     
+    // RAINE thresholds
+    
+  if (past_12<4 && forecast_6<5)
+  
+  {
+   // NOT MUCH RAINE 
     
 
 
-switch (state.VALVE_NUMBER)
- {
- case { it==1}:
- 	if (valve01) {
-  		if (state.valve01_Timer.toInteger()*state.valve01_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve01_count.toInteger())
-        {
-        	def v1_time = state.valve01_Timer.toInteger()
-            log.debug "wattering v1 start for, min $v1_time"
-        	state.VALVE_NUMBER_open = 1
-        	valve01.on()
-        	runIn(v1_time*60,valves_off)      
-        } else {runIn(1,valves_off)}
-        	
-       } else
-        	{         // GO NEXT VALVE
-        	runIn(1,valves_off)
-            }
- 	  break;
- case {it==2}:
-      if (valve02) {  
-        if (state.valve02_Timer.toInteger()*state.valve02_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve02_count.toInteger())
-        {
-        	
-        	def v2_time = state.valve02_Timer.toInteger()
-            log.debug "wattering v2 start for, min $v2_time"
-        	valve02.on()
-			state.VALVE_NUMBER_open = 2
-        	runIn(v2_time*60,valves_off)    
-         } else {runIn(1,valves_off)}
-   		} else {
-         // GO NEXT VALVE
-         runIn(1,valves_off)}
-    
-    break; 
-	
- case {it==3}:
- 		if (valve03) {
-          if (state.valve03_Timer.toInteger()*state.valve03_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve03_count.toInteger())
-          {
-                  
-        		  def v3_time = state.valve03_Timer.toInteger()
-                  log.debug "wattering v3 start for, min $v3_time"
-	        	state.VALVE_NUMBER_open = 3
-                  
-       		  valve03.on()
-        		  runIn(v3_time*60,valves_off) 
-        	} else {runIn(1,valves_off)}
-        } else {runIn(1,valves_off)}
-   	break; 
-	
- case {it==4}:
- 	if (valve04) {
-        if (state.valve04_Timer.toInteger()*state.valve04_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve04_count.toInteger())
-          {
-                
-                def v4_time = state.valve04_Timer.toInteger()
-                log.debug "wattering v4 start for, min $v4_time"
-               valve04.on()
-                       	state.VALVE_NUMBER_open = 4
-                runIn(v4_time*60,valves_off)    
-        	} else {runIn(1,valves_off)}
-        } else {runIn(1,valves_off)}
-   	break; 
-	
- case {it==5}:
- 	if (valve05) {
-        if (state.valve05_Timer.toInteger()*state.valve05_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve05_count.toInteger())
-          {
-            
-            def v5_time = state.valve05_Timer.toInteger()
-            log.debug "wattering v5 start for, min $v5_time"
-           valve05.on()
-                   	state.VALVE_NUMBER_open = 5
-            runIn(v5_time*60,valves_off)    
-       	  } else {runIn(1,valves_off)}
-        } else {runIn(1,valves_off)}
-   	break; 
-	
- case {it==6}:
- 	if (valve06) {
-        if (state.valve06_Timer.toInteger()*state.valve06_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve06_count.toInteger())
-          {
-                
-                def v6_time = state.valve06_Timer.toInteger()
-                log.debug "wattering v6 start for, min $v6_time"
-               valve06.on()
-                       	state.VALVE_NUMBER_open = 6
-                runIn(v6_time*60,valves_off)    
-        	} else {runIn(1,valves_off)}
-        } else {runIn(1,valves_off)}
-   	break; 
-	
- case {it==7}:
- 	if (valve07) {
-        if (state.valve07_Timer.toInteger()*state.valve07_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve07_count.toInteger())
-          {
-            
-            def v7_time = state.valve07_Timer.toInteger()
-            log.debug "wattering v7 start for, min $v7_time"
-           valve07.on()
-                   	state.VALVE_NUMBER_open = 7
-            runIn(v7_time*60,valves_off)    
-        	} else {runIn(1,valves_off)}
-        } else {runIn(1,valves_off)}
-   	break; 
-	
- case {it==8}:
- 	if (valve08) {
-        if (state.valve08_Timer.toInteger()*state.valve08_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve08_count.toInteger())
-          {
-            
-            def v8_time = state.valve08_Timer.toInteger()
-            log.debug "wattering v8 start for, min $v8_time"
-            valve08.on()
-                    	state.VALVE_NUMBER_open = 8
-            runIn(v8_time*60,valves_off)    
-        	} else {runIn(1,valves_off)}
-        } else {
-        
-        log.debug "valve v8 exiting"
-        runIn(1,valves_off)
-        }
-   	break; 
-   }
+                    switch (state.VALVE_NUMBER)
+                     {
+                     case { it==1}:
+                        if (valve01) {
+                            if (state.valve01_Timer.toInteger()*state.valve01_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve01_count.toInteger())
+                            {
+                                def v1_time = state.valve01_Timer.toInteger()
+                                log.debug "wattering v1 start for, min $v1_time"
+                                state.VALVE_NUMBER_open = 1
+                                valve01.on()
+                                runIn(v1_time*60,valves_off)      
+                            } else {runIn(1,valves_off)}
+
+                           } else
+                                {         // GO NEXT VALVE
+                                runIn(1,valves_off)
+                                }
+                          break;
+                     case {it==2}:
+                          if (valve02) {  
+                            if (state.valve02_Timer.toInteger()*state.valve02_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve02_count.toInteger())
+                            {
+
+                                def v2_time = state.valve02_Timer.toInteger()
+                                log.debug "wattering v2 start for, min $v2_time"
+                                valve02.on()
+                                state.VALVE_NUMBER_open = 2
+                                runIn(v2_time*60,valves_off)    
+                             } else {runIn(1,valves_off)}
+                            } else {
+                             // GO NEXT VALVE
+                             runIn(1,valves_off)}
+
+                        break; 
+
+                     case {it==3}:
+                            if (valve03) {
+                              if (state.valve03_Timer.toInteger()*state.valve03_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve03_count.toInteger())
+                              {
+
+                                      def v3_time = state.valve03_Timer.toInteger()
+                                      log.debug "wattering v3 start for, min $v3_time"
+                                    state.VALVE_NUMBER_open = 3
+
+                                  valve03.on()
+                                      runIn(v3_time*60,valves_off) 
+                                } else {runIn(1,valves_off)}
+                            } else {runIn(1,valves_off)}
+                        break; 
+
+                     case {it==4}:
+                        if (valve04) {
+                            if (state.valve04_Timer.toInteger()*state.valve04_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve04_count.toInteger())
+                              {
+
+                                    def v4_time = state.valve04_Timer.toInteger()
+                                    log.debug "wattering v4 start for, min $v4_time"
+                                   valve04.on()
+                                            state.VALVE_NUMBER_open = 4
+                                    runIn(v4_time*60,valves_off)    
+                                } else {runIn(1,valves_off)}
+                            } else {runIn(1,valves_off)}
+                        break; 
+
+                     case {it==5}:
+                        if (valve05) {
+                            if (state.valve05_Timer.toInteger()*state.valve05_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve05_count.toInteger())
+                              {
+
+                                def v5_time = state.valve05_Timer.toInteger()
+                                log.debug "wattering v5 start for, min $v5_time"
+                               valve05.on()
+                                        state.VALVE_NUMBER_open = 5
+                                runIn(v5_time*60,valves_off)    
+                              } else {runIn(1,valves_off)}
+                            } else {runIn(1,valves_off)}
+                        break; 
+
+                     case {it==6}:
+                        if (valve06) {
+                            if (state.valve06_Timer.toInteger()*state.valve06_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve06_count.toInteger())
+                              {
+
+                                    def v6_time = state.valve06_Timer.toInteger()
+                                    log.debug "wattering v6 start for, min $v6_time"
+                                   valve06.on()
+                                            state.VALVE_NUMBER_open = 6
+                                    runIn(v6_time*60,valves_off)    
+                                } else {runIn(1,valves_off)}
+                            } else {runIn(1,valves_off)}
+                        break; 
+
+                     case {it==7}:
+                        if (valve07) {
+                            if (state.valve07_Timer.toInteger()*state.valve07_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve07_count.toInteger())
+                              {
+
+                                def v7_time = state.valve07_Timer.toInteger()
+                                log.debug "wattering v7 start for, min $v7_time"
+                               valve07.on()
+                                        state.VALVE_NUMBER_open = 7
+                                runIn(v7_time*60,valves_off)    
+                                } else {runIn(1,valves_off)}
+                            } else {runIn(1,valves_off)}
+                        break; 
+
+                     case {it==8}:
+                        if (valve08) {
+                            if (state.valve08_Timer.toInteger()*state.valve08_count.toInteger()>0 && state.VALVE_SESSION.toInteger()<=state.valve08_count.toInteger())
+                              {
+
+                                def v8_time = state.valve08_Timer.toInteger()
+                                log.debug "wattering v8 start for, min $v8_time"
+                                valve08.on()
+                                            state.VALVE_NUMBER_open = 8
+                                runIn(v8_time*60,valves_off)    
+                                } else {runIn(1,valves_off)}
+                            } else {
+
+                            log.debug "valve v8 exiting"
+                            runIn(1,valves_off)
+                            }
+                        break; 
+                       }
+                       
+	}
+    else
+    {
+    		//RAINE
+    		//exit for now with delay
+			 log.debug "EXIT due to the raine"
+			
+             def rain_t = past_12+forecast_6
+             
+             sendMessage ("Raine threshold is $rain_t", true)
+             
+			 runIn(100,vallve_all_off)   
+
+    }
 
 
 }
@@ -1044,4 +1091,143 @@ def sendMessage(message , message_type)
   	}*/
     
     log.debug "MESSAGE: $stamp $app.label $message"
+}
+
+def accuweather_forecast_12()
+{
+
+	///http://dataservice.accuweather.com/forecasts/v1/daily/5day/1218844?apikey=MNRps0GCqAbArykpkM5zj6bPShIRKT2y&details=true&metric=true"
+	def keylocation = "1218844" // location key based on accuweather data - you can get that on their website
+    def APIkey = "MNRps0GCqAbArykpkM5zj6bPShIRKT2y"
+    def details = "true"
+	def metrics = "true"
+	
+    def  response = ""
+    def rain_next_6_hrs = 0
+    
+
+	def URI_HTTP ="http://dataservice.accuweather.com/forecasts/v1/hourly/12hour/$keylocation?apikey=$APIkey&details=$details&metric=$metrics" 
+	//log.debug "URI_HTTP: $URI_HTTP"
+    
+	try
+    	{
+                
+                
+                	httpGet(uri: URI_HTTP,contentType: 'application/json',)
+                				{resp ->           
+                           // log.debug "resp data: ${resp.data}"
+                          //  log.debug "result: ${resp.data.result}" 
+									response = resp.data
+
+								}
+							
+							//log.debug "result: $response"
+                            
+                    
+                            def total_l = response?.TotalLiquid?.Value
+                            
+                            
+                            //log.debug "result: $response"
+                            
+                            log.debug "TOTLA L : $total_l"
+   							
+                            rain_next_6_hrs =  total_l[0]+total_l[1]+total_l[2]+total_l[3]+total_l[4]+total_l[5]
+  							
+                            
+                            log.debug "rain_result: $rain_next_6_hrs" 
+                                                       
+
+						                                          		
+         }
+   		catch (e)
+		{
+        sendMessage("Check: Exception $e", false)
+		}
+   
+   			return rain_next_6_hrs
+
+   
+   /*
+   
+    if (rain_next_6_hrs!=null)
+		{
+        	log.debug "return rain_result: $rain_next_6_hrs"     
+			return rain_next_6_hrs
+		}  else
+        {
+			log.debug "fasle return rain_result ==== 0"     
+				return 0 
+		}
+   */  
+}
+
+
+
+def accuweather_Historical_Current()
+{
+
+	///http://dataservice.accuweather.com/forecasts/v1/daily/5day/1218844?apikey=MNRps0GCqAbArykpkM5zj6bPShIRKT2y&details=true&metric=true"
+	def keylocation = "1218844" // location key based on accuweather data - you can get that on their website
+    def APIkey = "MNRps0GCqAbArykpkM5zj6bPShIRKT2y"
+    def details = "true"
+	def metrics = "true"
+	
+    def  response = ""
+	def rain_12_hrs = 0
+    
+
+	def URI_HTTP ="http://dataservice.accuweather.com/currentconditions/v1/$keylocation/historical/24?apikey=$APIkey&details=$details" 
+	log.debug "URI_HTTP: $URI_HTTP"
+    
+	try
+    	{
+                
+                
+                	httpGet(uri: URI_HTTP,contentType: 'application/json',)
+                				{resp ->           
+                           // log.debug "resp data: ${resp.data}"
+                          //  log.debug "result: ${resp.data.result}" 
+									response = resp.data
+
+								}
+							
+							//log.debug "result: $response"
+                            
+        
+                            def total_l = response?.PrecipitationSummary?.Past12Hours?.Metric?.Value
+                            
+                           
+                            //log.debug "TOTLA L : $total_l"
+                            
+                            rain_12_hrs =  total_l[0]
+                            
+                            
+							log.debug "rain_12_hrs: $rain_12_hrs"
+                            
+							                            
+                            //log.debug "rain_result: $rain_result" 
+                                                       
+
+						                                          		
+         }
+   		catch (e)
+		{
+        sendMessage("Check: Exception $e", false)
+		}
+   
+   
+   			return rain_12_hrs
+
+   
+   /*
+     if (rain_12_hrs!=null)
+		{
+        	log.debug "return last 12 rain_result: $rain_12_hrs"     
+			return rain_12_hrs
+		}  else
+        {
+			log.debug "fasle last 12 return rain_result ==     0"     
+				return 0
+		}
+    */ 
 }
