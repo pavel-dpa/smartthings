@@ -79,31 +79,31 @@ preferences {
 		input "valve01_time", type: "number" , title: "Zone 1 - time", required: false, defaultValue: "5"
         input "valve01_session_count", type: "number" , title: "Zone 1 - count",required: false, defaultValue: "2"  
         
-        input "valve02", "capability.switch", title: "Zone 2 valve", required: true, multiple: false
+        input "valve02", "capability.switch", title: "Zone 2 valve", required: false, multiple: false
 		input "valve02_time", type: "number" , title: "Zone 2 - time", required: false, defaultValue: "5"
         input "valve02_session_count", type: "number" , title: "Zone 2 - count",required: false, defaultValue: "2"       
         
-        input "valve03", "capability.switch", title: "Zone 3 valve", required: true, multiple: false
+        input "valve03", "capability.switch", title: "Zone 3 valve", required: false, multiple: false
 		input "valve03_time", type: "number" , title: "Zone 3 - time", required: false, defaultValue: "5"
         input "valve03_session_count", type: "number" , title: "Zone 3 - count",required: false, defaultValue: "2"       
         
-        input "valve04", "capability.switch", title: "Zone 4 valve", required: true, multiple: false
+        input "valve04", "capability.switch", title: "Zone 4 valve", required: false, multiple: false
 		input "valve04_time", type: "number" , title: "Zone 4 - time", required: false, defaultValue: "5"
         input "valve04_session_count", type: "number" , title: "Zone 4 - count",required: false, defaultValue: "2"       
         
-        input "valve05", "capability.switch", title: "Zone 5 valve", required: true, multiple: false
+        input "valve05", "capability.switch", title: "Zone 5 valve", required: false, multiple: false
 		input "valve05_time", type: "number" , title: "Zone 5 - time", required: false, defaultValue: "5"
         input "valve05_session_count", type: "number" , title: "Zone 5 - count",required: false, defaultValue: "2"  
         
-        input "valve06", "capability.switch", title: "Zone 6 valve", required: true, multiple: false
+        input "valve06", "capability.switch", title: "Zone 6 valve", required: false, multiple: false
 		input "valve06_time", type: "number" , title: "Zone 6 - time", required: false, defaultValue: "5"
         input "valve06_session_count", type: "number" , title: "Zone 6 - count",required: false, defaultValue: "2"       
         
-        input "valve07", "capability.switch", title: "Zone 7 valve", required: true, multiple: false
+        input "valve07", "capability.switch", title: "Zone 7 valve", required: false, multiple: false
 		input "valve07_time", type: "number" , title: "Zone 7 - time", required: false, defaultValue: "5"
         input "valve07_session_count", type: "number" , title: "Zone 7 - count",required: false, defaultValue: "2"       
         
-        input "valve08", "capability.switch", title: "Zone 8 valve", required: true, multiple: false
+        input "valve08", "capability.switch", title: "Zone 8 valve", required: false, multiple: false
 		input "valve08_time", type: "number" , title: "Zone 8 - time", required: false, defaultValue: "5"
         input "valve08_session_count", type: "number" , title: "Zone 8 - count",required: false, defaultValue: "2"       
 	}
