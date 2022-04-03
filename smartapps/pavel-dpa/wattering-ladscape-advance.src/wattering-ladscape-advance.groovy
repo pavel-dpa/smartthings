@@ -27,7 +27,7 @@ definition(
 
 /* TODO
  
- - schedule for each valave
+ - remind mm of raine to calculcate next wattring right
  - valve by mm per hour
  - valve by mm per hour + weather today yesterday - tomorrow
 
@@ -44,6 +44,8 @@ preferences {
 		input "Sunrize_Sunset_check", "bool", title: "Would you like use sunerise and sunset?",  required: true
         input "Sunrize_check_info", "bool", title: "Would you like use sunerise?",  required: true
         input "Sunset_check_info", "bool", title: "Would you like use suneset?",  required: true
+		input "Rain_check_before", "number", title: "Number Raine before", required: false, defaultValue: 0
+        input "Rain_check_after", "number", title: "Number Raine after", required: false, defaultValue: 0
         input "Sunrize_delay", "number", title: "Sunrize delay", required: false, defaultValue: 0
         input "Sunset_delay", "number", title: "Sunset delay", required: false, defaultValue: 0
 		
@@ -253,7 +255,7 @@ def order_check_valve()
          //runIn(10,correct_valves_data(1))    
 	   	def tt_3 = correct_valves_data(1)
 		//calculate the offset to check
-   		def v_time_sec = calculate_the_offset()
+   		def v_time_sec = calculate_the_offset(true)
     
     	def  v_time_min = v_time_sec.toInteger()/60
 
@@ -582,7 +584,7 @@ if (Sunrize_Sunset_check)
 }
 
 
-def calculate_the_offset()
+def calculate_the_offset(session_delays)
 {
 	def result= 0
 
@@ -596,10 +598,21 @@ def calculate_the_offset()
     if (state.valve08_Timer) {result = result+state.valve08_Timer.toInteger()*state.valve08_count.toInteger()}
 
 
-	//45 sec per session even if valves off
-    result = result.toInteger() * 60  + state.MAX_VALVE_SESSION.toInteger() * 45
+
+	result = result.toInteger() * 60
 	// result in sec
-	log.debug "Offset in sec ${result}"
+
+
+	if (session_delays)
+    	{
+	//45 sec per session even if valves off
+    	result = result.toInteger() + state.MAX_VALVE_SESSION.toInteger() * 45
+			log.debug "Offset added delyes for sessions"
+	
+    	}
+    
+    def off_r = result.toInteger()
+	log.debug "Offset in sec ${off_r}"
 
     
 
@@ -637,7 +650,7 @@ def set_schedulers(message_type)
     log.debug "Max sessions count: ${state.MAX_VALVE_SESSION}"
         
 		//calculate the offset
-   		def v_time = calculate_the_offset()
+   		def v_time = calculate_the_offset(true)
 
     
 	 //runIn(10, setup_valves_schedulers(v_time)) 
@@ -784,20 +797,21 @@ def wattering ()
     if (valve08) {valve08.off()}
 
 
-
- def forecast_6 = 0
+ def offset_to_start = 100
+ 
+ def forecast_12 = 0
  def past_12 = 0
 
 
 if (state.VALVE_SESSION.toInteger()==1 && state.VALVE_NUMBER.toInteger()==1) 
 
 	{
-    	
-        forecast_6 = accuweather_forecast_12()
+    	offset_to_start = calculate_the_offset(false)
+        forecast_12 = accuweather_forecast_12()
         past_12 = accuweather_Historical_Current()
 
 				log.debug "past mm = $past_12"
-   				log.debug "forecast mm = $forecast_6"
+   				log.debug "forecast mm = $forecast_12"
     
 			sendMessage ("Wattering is starting",true)
             
@@ -814,7 +828,8 @@ if (state.VALVE_SESSION.toInteger()==1 && state.VALVE_NUMBER.toInteger()==1)
     
     // RAINE thresholds
     
-  if (past_12<4 && forecast_6<5)
+    
+  if (past_12<Rain_check_before && forecast_12<Rain_check_after && offset_to_start>0)
   
   {
    // NOT MUCH RAINE 
@@ -949,15 +964,23 @@ if (state.VALVE_SESSION.toInteger()==1 && state.VALVE_NUMBER.toInteger()==1)
 	}
     else
     {
-    		//RAINE
+    		//RAINE or Zero sessions planned
     		//exit for now with delay
-			 log.debug "EXIT due to the raine"
 			
-             def rain_t = past_12+forecast_6
-             
-             sendMessage ("Raine threshold is $rain_t", true)
-             
-			 runIn(100,vallve_all_off)   
+             def rain_t = past_12+forecast_12
+             if (offset_to_start>0)
+             	{
+					log.debug "EXIT due to the raine"
+             		sendMessage ("Watterind aborted as raine threshold is $rain_t", true)
+                 }
+                 else
+                 {
+                 	log.debug "EXIT due to zero wattering $calculate_the_offset"
+                    sendMessage ("Wattering exit as no planned time for this session", true)
+                 
+                 }
+			 unschedule()
+			 runIn(50,vallve_all_off)   
 
     }
 
@@ -1097,7 +1120,7 @@ def accuweather_forecast_12()
 {
 
 	///http://dataservice.accuweather.com/forecasts/v1/daily/5day/1218844?apikey=MNRps0GCqAbArykpkM5zj6bPShIRKT2y&details=true&metric=true"
-	def keylocation = "1218844" // location key based on accuweather data - you can get that on their website
+	def keylocation = "1219063" // location key based on accuweather data - you can get that on their website
     def APIkey = "MNRps0GCqAbArykpkM5zj6bPShIRKT2y"
     def details = "true"
 	def metrics = "true"
@@ -1129,9 +1152,11 @@ def accuweather_forecast_12()
                             
                             //log.debug "result: $response"
                             
-                            log.debug "TOTLA L : $total_l"
+                            log.debug "total liquid amount mm: $total_l"
    							
                             rain_next_6_hrs =  total_l[0]+total_l[1]+total_l[2]+total_l[3]+total_l[4]+total_l[5]
+                            rain_next_6_hrs = rain_next_6_hrs + total_l[6]+total_l[7]+total_l[8]+total_l[9]+total_l[10]+total_l[11]
+                            
   							
                             
                             log.debug "rain_result: $rain_next_6_hrs" 
@@ -1167,7 +1192,7 @@ def accuweather_Historical_Current()
 {
 
 	///http://dataservice.accuweather.com/forecasts/v1/daily/5day/1218844?apikey=MNRps0GCqAbArykpkM5zj6bPShIRKT2y&details=true&metric=true"
-	def keylocation = "1218844" // location key based on accuweather data - you can get that on their website
+	def keylocation = "1219063" // location key based on accuweather data - you can get that on their website
     def APIkey = "MNRps0GCqAbArykpkM5zj6bPShIRKT2y"
     def details = "true"
 	def metrics = "true"
@@ -1177,7 +1202,7 @@ def accuweather_Historical_Current()
     
 
 	def URI_HTTP ="http://dataservice.accuweather.com/currentconditions/v1/$keylocation/historical/24?apikey=$APIkey&details=$details" 
-	log.debug "URI_HTTP: $URI_HTTP"
+	//log.debug "URI_HTTP: $URI_HTTP"
     
 	try
     	{
