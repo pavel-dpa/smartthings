@@ -259,7 +259,7 @@ if (Sunset_check_info)
             ///schedule(Sunset_Sunrise.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone),wattering)
 			///sendMessage("Watterind setuped for today at : $sunset_offset",message_type)          
 
-			timer_2_date = Sunset_Sunrise.sunset
+			timer_2_date = Sunset_Sunrise.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
             schedule_message_str2 = 'Watterind setuped for today at : '+sunset_offset//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
             
             
@@ -274,7 +274,7 @@ if (Sunset_check_info)
 			///schedule(Sunset_Sunrise_tomorrow.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone),wattering)
 			///sendMessage("Watterind setuped for tomorrow at : $sunset_offset",message_type)         
           
-            timer_2_date = Sunset_Sunrise_tomorrow.sunset
+            timer_2_date = Sunset_Sunrise_tomorrow.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
             schedule_message_str2 = 'Watterind setuped for tomorrow at : '+sunset_offset//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
             
             log.debug "Schedules sunset wattering for tomorrow at: $sunset_offset"
