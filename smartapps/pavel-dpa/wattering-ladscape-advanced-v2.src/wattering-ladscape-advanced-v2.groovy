@@ -309,7 +309,7 @@ if (Sunset_check_info)
 
 def set_clear_timer_date1 = timeTodayAfter(new Date(),timer_1_date,location.timeZone)
 
-if (start_after_W)
+if (start_after_W || Sunset_check_info)
 {
 def set_clear_timer_date2 = timeTodayAfter(new Date(),timer_2_date,location.timeZone)
 
