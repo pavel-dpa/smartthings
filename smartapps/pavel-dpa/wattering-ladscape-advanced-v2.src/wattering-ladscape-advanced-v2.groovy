@@ -876,7 +876,7 @@ def wattering_exit()
     
 //4 - patern - 1  
 	state.order_patern=state.order_patern-1
-	if (0>=state.order_patern){state.order_patern=Patern_schedule_1-1}
+	if (0>state.order_patern){state.order_patern=Patern_schedule-1}
 
 	state.VALVE_SESSION = 1
 	state.VALVE_NUMBER = 1
