@@ -406,10 +406,14 @@ def past_12=0
 
 
 def wheater_data = accuweather_forecast_12()
+
+    
     
 def forecast_12 = wheater_data[0]
 def day_max_temp= wheater_data[1]
 def day_max_temp_rf= wheater_data[2]
+
+
 
 
 //def forecast_12 = 5
@@ -476,11 +480,15 @@ def wattering()
     def past_12=0
     state.wheater_data_temp = accuweather_forecast_12()
 
+	def rain_data_12 = accuweather_Historical_Current()
+
     def forecast_12 = state.wheater_data_temp[0]
     def day_max_temp= state.wheater_data_temp[1]
     def day_max_temp_rf= state.wheater_data_temp[2]
 
     def day_max_temp_real = 0
+    
+    def rain_history_forecast = rain_data_12 + forecast_12
  
     
 	if (day_max_temp>day_max_temp_rf) 
@@ -506,7 +514,7 @@ if (state.order_patern == Patern_schedule || state.order_patern == 1)
     {
     	log.debug "Wattering pattern pass" 
 
-        if (forecast_12<Rain_check_value)
+        if (rain_history_forecast<Rain_check_value)
        {
            	log.debug "Rain threshold pass" 
 			sendMessage ("Watterind started", true)
@@ -522,7 +530,7 @@ if (state.order_patern == Patern_schedule || state.order_patern == 1)
         
          wattering_exit(1)
 		 //EXIT DUE TO RAIN
-         sendMessage ("Watterind aborted due to the raine threshold is $forecast_12", true)
+         sendMessage ("Watterind aborted due to the raine threshold is $rain_history_forecast", true)
         }
     }
 	else
