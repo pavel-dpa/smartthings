@@ -196,7 +196,7 @@ if (Sunrize_check_info)
             ///sendMessage("Watterind setuped for next day at: $sunrise_offset_tomorrow",message_type)
            
              timer_1_date = sunrise_offset_tomorrow
-             schedule_message_str1 = 'Watterind setuped for next day at: '+sunrise_offset_tomorrow//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+             schedule_message_str1 = 'Watterind setuped for next day at: '//+sunrise_offset_tomorrow//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
              
             log.debug "Schedules sunset wattering for next day at: $sunrise_offset_tomorrow"
                        
@@ -212,7 +212,7 @@ if (Sunrize_check_info)
 		  ///sendMessage("Watterind setuped for today at : $sunrise_offset",message_type)
         
           timer_1_date = Sunset_Sunrise.sunrise
-		  schedule_message_str1 = 'Watterind setuped for today at : '+sunrise_offset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+		  schedule_message_str1 = 'Watterind setuped for today at : '//+sunrise_offset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
 
           log.debug "Schedules sunrise wattering for today: $sunrise_offset" 
            
@@ -237,7 +237,7 @@ if (Sunrize_check_info)
         ///sendMessage("Watterind setuped to : $processing_time_Final",message_type)       
 	
 		timer_1_date = start_b_w_time
-		schedule_message_str1 = 'Watterind setuped to : '+processing_time_Final.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+		schedule_message_str1 = 'Watterind setuped to : '//+processing_time_Final.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
         
         
         log.debug "Schedules wattering for: $processing_time_Final" 
@@ -260,7 +260,7 @@ if (Sunset_check_info)
 			///sendMessage("Watterind setuped for today at : $sunset_offset",message_type)          
 
 			timer_2_date = Sunset_Sunrise.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
-            schedule_message_str2 = 'Watterind setuped for today at : '+timer_2_date//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+            schedule_message_str2 = 'Watterind setuped for today at : '//+timer_2_date//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
             
             
             log.debug "Schedules sunset wattering for today at: $sunset_offset"
@@ -275,7 +275,7 @@ if (Sunset_check_info)
 			///sendMessage("Watterind setuped for tomorrow at : $sunset_offset",message_type)         
           
             timer_2_date = Sunset_Sunrise_tomorrow.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
-            schedule_message_str2 = 'Watterind setuped for tomorrow at : '+timer_2_date//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+            schedule_message_str2 = 'Watterind setuped for tomorrow at : '//+timer_2_date//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
             
             log.debug "Schedules sunset wattering for tomorrow at: $sunset_offset"
         }
@@ -295,7 +295,7 @@ if (Sunset_check_info)
         ///schedule(sch_string_A,wattering)
         ///sendMessage("Watterind setuped to : $processing_time_Final_A",message_type)
 		
-        schedule_message_str2 = 'Watterind setuped to : '+processing_time_Final_A.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+        schedule_message_str2 = 'Watterind setuped to : '//+processing_time_Final_A.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
 		timer_2_date = start_aftre_w_time
 
 
@@ -321,12 +321,16 @@ log.debug "set_clear_timer_date2 : $set_clear_timer_date2"
         {
             log.debug "set_clear_timer_date2 CHECK: $set_clear_timer_date2"                  
             schedule(set_clear_timer_date2,wattering)
+            
+            schedule_message_str2 = schedule_message_str2 + set_clear_timer_date2.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
 			sendMessage(schedule_message_str2,message_type)
         }
         else
         {
             log.debug "set_clear_timer_date1 CHECK : $set_clear_timer_date1"                  
             schedule(set_clear_timer_date1,wattering)
+            
+            schedule_message_str1 = schedule_message_str1 + set_clear_timer_date1.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
 			sendMessage(schedule_message_str1,message_type)
         }
 
