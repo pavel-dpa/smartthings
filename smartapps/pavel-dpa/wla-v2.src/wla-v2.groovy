@@ -506,15 +506,18 @@ if (state.order_patern == Patern_schedule || state.order_patern == 1)
        {
            	log.debug "Rain threshold pass" 
 			sendMessage ("Watterind started", true)
+            valve_main.on
        		wattering_start()
         }
         else
         {
          log.debug "EXIT due to the raine"
          
-		 
-         wattering_exit()
-		 
+		 state.order_patern=state.order_patern-1
+		if (0>state.order_patern){state.order_patern=Patern_schedule-1}
+        
+         wattering_exit(1)
+		 //EXIT DUE TO RAIN
          sendMessage ("Watterind aborted due to the raine threshold is $forecast_12", true)
         }
     }
@@ -523,10 +526,8 @@ if (state.order_patern == Patern_schedule || state.order_patern == 1)
     	
 		//if we skip run based on pattern
 		log.debug "Pattern skip run" 
-		state.order_patern=state.order_patern-1
-		if (0>=state.order_patern){state.order_patern=Patern_schedule_1-1}
-        
-		wattering_exit()
+	    
+		wattering_exit(3)
 	}
         
         
@@ -801,9 +802,9 @@ if (valve08 && valve08_session_count) {
 
                     log.debug "EXIT"
                     
-					wattering_exit()
-					// REMOVE
-                    //sendMessage ("Watterind aborted due to the raine threshold is $rain_t", true)   
+					wattering_exit(0)
+
+					//NORMAL EXIT AFTER WATTERING
 
                 }
                 else
@@ -841,7 +842,7 @@ def valves_all_off()
     
 }
 
-def wattering_exit()
+def wattering_exit(exit_type)
 {
 
 
@@ -873,11 +874,15 @@ def wattering_exit()
 
 
 	log.debug "Exit temp check -  : ${day_max_temp_real}" 
-    
+    sendMessage ("Exit temp check -  : ${day_max_temp_real}" , true)   
 //4 - patern - 1  
 	state.order_patern=state.order_patern-1
-	if (0>state.order_patern){state.order_patern=Patern_schedule-1}
 
+	if (0>state.order_patern){state.order_patern=Patern_schedule-1}
+	log.debug "Order patern before check -  : ${state.order_patern}" 
+    sendMessage ("Order patern before check -  : ${state.order_patern}" , true)   
+    
+    
 	state.VALVE_SESSION = 1
 	state.VALVE_NUMBER = 1
     
@@ -891,27 +896,47 @@ def wattering_exit()
 //temp check & pattern
 	if (day_max_temp_real>Max_temp_schedule_1 && state.order_patern_num!=2) 
     	{
-    		state.order_patern=Patern_schedule_2
+    		def result_patern =  Patern_schedule_2+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}
+           	
             state.order_patern_num=2
         }
     if (day_max_temp_real>Max_temp_schedule_2 && state.order_patern_num!=3) 
     	{
-        state.order_patern=Patern_schedule_3
+        	def result_patern =  Patern_schedule_3+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}
+        
         state.order_patern_num=3
         }
    if (day_max_temp_real>Max_temp_schedule_3 && state.order_patern_num!=4) 
     	{
-        state.order_patern=Patern_schedule_4
+        	def result_patern =  Patern_schedule_4+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}        	
+  
         state.order_patern_num=4
         }
     if (Max_temp_schedule_1>day_max_temp_real && state.order_patern_num!=1) 
     	{
-        state.order_patern=Patern_schedule_1
+        	def result_patern =  Patern_schedule_1+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}
+                
         state.order_patern_num=1
         }
 
 	log.debug "Exit Patern# : ${state.order_patern}" 
-    
+    sendMessage ("Order patern after check -  : ${state.order_patern}" , true)   
 	log.debug "Exit order_patern_num : ${state.order_patern_num}" 
 
 }
