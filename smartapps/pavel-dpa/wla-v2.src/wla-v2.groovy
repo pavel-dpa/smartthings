@@ -125,7 +125,8 @@ def updated() {
 
 	unsubscribe()
     unschedule()
-	initialize()
+	//initialize()
+    wattering_init_setup() 
     
 }
 
@@ -240,7 +241,7 @@ if (Sunrize_check_info)
 		schedule_message_str1 = 'Watterind setuped to : '//+processing_time_Final.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
         
         
-        log.debug "Schedules wattering for: $processing_time_Final" 
+        log.debug "Schedules wattering for: $timer_1_date" 
 
         
     }
@@ -340,7 +341,10 @@ else
 
 {
 // ONLY FIRST RUN
-            log.debug "set_clear_timer_date1 CHECK ONLY : $set_clear_timer_date1"                  
+            log.debug "set_clear_timer_date1 CHECK ONLY : $set_clear_timer_date1"  
+			schedule_message_str1 = schedule_message_str1 + set_clear_timer_date1.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+
+            
             schedule(set_clear_timer_date1,wattering)
 			sendMessage(schedule_message_str1,message_type)
 }
@@ -401,73 +405,18 @@ try
 def wattering_init_setup()
 {
 
-//3 - if patern
-def past_12=0
-
-
-def wheater_data = accuweather_forecast_12()
-
+	state.wheater_data_temp = accuweather_forecast_12()
     
-    
-def forecast_12 = wheater_data[0]
-def day_max_temp= wheater_data[1]
-def day_max_temp_rf= wheater_data[2]
-
-
-
-
-//def forecast_12 = 5
-//def day_max_temp= 6
-//def day_max_temp_rf=7
-
-
-def day_max_temp_real = 0
- 
-    
-	if (day_max_temp>day_max_temp_rf) 
-    {
-        day_max_temp_real=day_max_temp
-    } else
-    {
-        day_max_temp_real=day_max_temp_rf
-    }
-
-
-	log.debug "Initial temp check - ${day_max_temp_real}" 
-
-	if (state.order_patern_num ==0)
+    set_schedulers(true)
+	/*if (state.order_patern_num ==0)
     	{set_schedulers(true)}
         else
         {set_schedulers(false)}
-        
+    */    
         state.VALVE_SESSION = 1
 		state.VALVE_NUMBER = 1
 
-// ALIGN WITH REGULAR FLOW AS IT RESET EVERTHING
-//temp check & pattern
-	if (day_max_temp_real>Max_temp_schedule_1 && state.order_patern_num!=2) 
-    	{
-    		state.order_patern=Patern_schedule_2
-            state.order_patern_num=2
-        }
-    if (day_max_temp_real>Max_temp_schedule_2 && state.order_patern_num!=3) 
-    	{
-        state.order_patern=Patern_schedule_3
-        state.order_patern_num=3
-        }
-   if (day_max_temp_real>Max_temp_schedule_3 && state.order_patern_num!=4) 
-    	{
-        state.order_patern=Patern_schedule_4
-        state.order_patern_num=4
-        }
-    if (Max_temp_schedule_1>day_max_temp_real && state.order_patern_num!=1) 
-    	{
-        state.order_patern=Patern_schedule_1
-        state.order_patern_num=1
-        }
-        
-        
-        
+      Patern_check_scheduler()             
 
 	log.debug "initial Patern# : ${state.order_patern}" 
     
@@ -477,57 +426,46 @@ def day_max_temp_real = 0
 def wattering()
 {
 
-    def past_12=0
+   
     state.wheater_data_temp = accuweather_forecast_12()
 
-	def rain_data_12 = accuweather_Historical_Current()
-
     def forecast_12 = state.wheater_data_temp[0]
-    def day_max_temp= state.wheater_data_temp[1]
-    def day_max_temp_rf= state.wheater_data_temp[2]
-
-    def day_max_temp_real = 0
-    
+	def rain_data_12 = accuweather_Historical_Current()
     def rain_history_forecast = rain_data_12 + forecast_12
  
+
     
-	if (day_max_temp>day_max_temp_rf) 
-    {
-        day_max_temp_real=day_max_temp
-    } else
-    {
-        day_max_temp_real=day_max_temp_rf
-    }
-
-
-	log.debug "Wattering temp check - ${day_max_temp_real}" 
 	def Patern_schedule = -1
     if (state.order_patern_num ==1) {Patern_schedule=Patern_schedule_1}
     if (state.order_patern_num ==2) {Patern_schedule=Patern_schedule_2}
     if (state.order_patern_num ==3) {Patern_schedule=Patern_schedule_3}
     if (state.order_patern_num ==4) {Patern_schedule=Patern_schedule_4}
 
+    	log.debug "Wattering patern $Patern_schedule" 
 
 //wattering
 
 if (state.order_patern == Patern_schedule || state.order_patern == 1)
     {
     	log.debug "Wattering pattern pass" 
+    	log.debug "rain data $rain_history_forecast" 
 
         if (rain_history_forecast<Rain_check_value)
        {
            	log.debug "Rain threshold pass" 
 			sendMessage ("Watterind started", true)
-            valve_main.on
+        	
+            state.VALVE_SESSION = 1
+			state.VALVE_NUMBER = 1
+        
+            valve_main.on()
        		wattering_start()
         }
         else
         {
-         log.debug "EXIT due to the raine"
+         log.debug "EXIT due to the raine $rain_history_forecast"
          
-		 state.order_patern=state.order_patern-1
-		if (0>state.order_patern){state.order_patern=Patern_schedule-1}
-        
+       
          wattering_exit(1)
 		 //EXIT DUE TO RAIN
          sendMessage ("Watterind aborted due to the raine threshold is $rain_history_forecast", true)
@@ -795,6 +733,8 @@ if (valve08 && valve08_session_count) {
 
  state.VALVE_NUMBER = state.VALVE_NUMBER + 1
 
+
+///////////////CONST  THIS APP FOR 8 VALVES
     if (state.VALVE_NUMBER.toInteger()<9)
         {
 
@@ -854,18 +794,18 @@ def valves_all_off()
     
 }
 
-def wattering_exit(exit_type)
+
+
+def Patern_check_scheduler()
 {
 
-
-	valves_all_off()
-    
-	def Patern_schedule = -1
+	def Patern_schedule = 0
     if (state.order_patern_num ==1) {Patern_schedule=Patern_schedule_1}
     if (state.order_patern_num ==2) {Patern_schedule=Patern_schedule_2}
     if (state.order_patern_num ==3) {Patern_schedule=Patern_schedule_3}
     if (state.order_patern_num ==4) {Patern_schedule=Patern_schedule_4}
-    
+
+
     def past_12=0
    
 
@@ -887,21 +827,170 @@ def wattering_exit(exit_type)
 
 	log.debug "Exit temp check -  : ${day_max_temp_real}" 
     sendMessage ("Exit temp check -  : ${day_max_temp_real}" , true)   
+    log.debug "Exit max temp# : ${day_max_temp_real}" 
+
+	log.debug "Order patern before check -  : ${state.order_patern}" 
+    sendMessage ("Order patern before check -  : ${state.order_patern}" , true)  
+
+
+// ALIGN WITH REGULAR FLOW AS IT RESET EVERTHING
+//temp check & pattern
+
+ switch (day_max_temp_real)
+    {
+    
+    	  case {it>Max_temp_schedule_3 && state.order_patern_num!=4}:
+         	def result_patern =  Patern_schedule_4+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}        	
+  
+        	state.order_patern_num=4
+         break;z
+         
+         case {it>Max_temp_schedule_2 && state.order_patern_num!=3}:
+         	def result_patern =  Patern_schedule_3+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}
+        
+        	state.order_patern_num=3
+        break;
+        
+        case {it>Max_temp_schedule_1 && state.order_patern_num!=2}:
+          	def result_patern =  Patern_schedule_2+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}
+           	
+            state.order_patern_num=2 
+        break;
+  
+         case {Max_temp_schedule_1>=it && state.order_patern_num!=1}:
+         	def result_patern =  Patern_schedule_1+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}
+                
+        	state.order_patern_num=1
+        break;
+	}
+
+/*
+	if (day_max_temp_real>Max_temp_schedule_1 && state.order_patern_num!=2) 
+    	{
+    		def result_patern =  Patern_schedule_2+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}
+           	
+            state.order_patern_num=2
+        }
+    if (day_max_temp_real>Max_temp_schedule_2 && state.order_patern_num!=3) 
+    	{
+        	def result_patern =  Patern_schedule_3+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}
+        
+        state.order_patern_num=3
+        }
+   if (day_max_temp_real>Max_temp_schedule_3 && state.order_patern_num!=4) 
+    	{
+        	def result_patern =  Patern_schedule_4+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}        	
+  
+        state.order_patern_num=4
+        }
+    if (Max_temp_schedule_1>day_max_temp_real && state.order_patern_num!=1) 
+    	{
+        	def result_patern =  Patern_schedule_1+state.order_patern - Patern_schedule       
+            if (0>=result_patern) 
+            	{state.order_patern=1}
+                else
+                {state.order_patern=result_patern}
+                
+        state.order_patern_num=1
+        }
+*/
+	log.debug "Exit Patern# : ${state.order_patern}" 
+    sendMessage ("Order patern after check -  : ${state.order_patern}" , true)   
+	log.debug "Exit order_patern_num : ${state.order_patern_num}" 
+    
+    
+
+}
+
+
+
+def wattering_exit(exit_type)
+{
+
+
+	valves_all_off()
+
+    
+	def Patern_schedule = -1
+    if (state.order_patern_num ==1) {Patern_schedule=Patern_schedule_1}
+    if (state.order_patern_num ==2) {Patern_schedule=Patern_schedule_2}
+    if (state.order_patern_num ==3) {Patern_schedule=Patern_schedule_3}
+    if (state.order_patern_num ==4) {Patern_schedule=Patern_schedule_4}
+//////////////
+/*
+
+    def past_12=0
+   
+
+    def forecast_12 = state.wheater_data_temp[0]
+    def day_max_temp= state.wheater_data_temp[1]
+    def day_max_temp_rf= state.wheater_data_temp[2]
+
+    def day_max_temp_real = 0
+ 
+    
+	if (day_max_temp>day_max_temp_rf) 
+    {
+        day_max_temp_real=day_max_temp
+    } else
+    {
+        day_max_temp_real=day_max_temp_rf
+    }
+
+
+	log.debug "Exit temp check -  : ${day_max_temp_real}" 
+    sendMessage ("Exit temp check -  : ${day_max_temp_real}" , true)   
+*/
+//////////////
+
 //4 - patern - 1  
+
+
 	state.order_patern=state.order_patern-1
 
 	if (0>state.order_patern){state.order_patern=Patern_schedule-1}
-	log.debug "Order patern before check -  : ${state.order_patern}" 
-    sendMessage ("Order patern before check -  : ${state.order_patern}" , true)   
-    
+ 
+ 
     
 	state.VALVE_SESSION = 1
 	state.VALVE_NUMBER = 1
     
-  sendMessage ("Watterind has done", true)   
-  set_schedulers(true)
+  	sendMessage ("Watterind has done", true)   
+  
+  	Patern_check_scheduler()
+  
+  	set_schedulers(true)
 
-
+//////////////////////////////////
+/*
 	log.debug "Exit max temp# : ${day_max_temp_real}" 
 
 // ALIGN WITH REGULAR FLOW AS IT RESET EVERTHING
@@ -950,7 +1039,8 @@ def wattering_exit(exit_type)
 	log.debug "Exit Patern# : ${state.order_patern}" 
     sendMessage ("Order patern after check -  : ${state.order_patern}" , true)   
 	log.debug "Exit order_patern_num : ${state.order_patern_num}" 
-
+*/
+/////////////////////////////////////////////////////
 }
 
 
@@ -1106,7 +1196,7 @@ def accuweather_Historical_Current()
                             rain_12_hrs =  total_l[0]
                             
                             
-							log.debug "rain_12_hrs: $rain_12_hrs"
+							log.debug "rain_history_hrs: $rain_12_hrs"
                             
 							                            
                             //log.debug "rain_result: $rain_result" 
