@@ -51,7 +51,14 @@ preferences {
         input "Sunset_delay", "number", title: "Sunset delay, min", required: false, defaultValue: 0
 
 	}
-       section("Temp and Raine & Patern")
+       section("Temp and Raine")
+       {
+    
+    	input "Min_temp_start", "number", title: "Min temperature for wattering, C", required: true, defaultValue: 3
+      	input "Rain_check_value", "number", title: "Number Raine, mm", required: true, defaultValue: 6
+        
+		}
+       section("Paterns config")
     {
     
     	//patern = 4 means start on 4 and 1, 3 start on 3 and 1, 2 on 2 and 1(2 times per day) :)
@@ -67,7 +74,6 @@ preferences {
                 
         input "Patern_schedule_4", "number", title: "High approach", required: false, defaultValue: 2
 
-      	input "Rain_check_value", "number", title: "Number Raine, mm", required: false, defaultValue: 6
 
     }
   
@@ -432,8 +438,15 @@ def wattering()
     def forecast_12 = state.wheater_data_temp[0]
 	def rain_data_12 = accuweather_Historical_Current()
     def rain_history_forecast = rain_data_12 + forecast_12
+    
+    def day_min_temp = state.wheater_data_temp[3]
+    def day_min_temp_rf =  state.wheater_data_temp[4]
  
 
+    def day_min_temp_comp = day_min_temp
+    
+    if (day_min_temp_comp>day_min_temp_rf) {day_min_temp_comp=day_min_temp_rf}
+    
     
 	def Patern_schedule = -1
     if (state.order_patern_num ==1) {Patern_schedule=Patern_schedule_1}
@@ -445,40 +458,56 @@ def wattering()
 
 //wattering
 
-if (state.order_patern == Patern_schedule || state.order_patern == 1)
-    {
-    	log.debug "Wattering pattern pass" 
-    	log.debug "rain data $rain_history_forecast" 
+if (day_min_temp_comp>Min_temp_start)
+{
+	log.debug "Wattering min_temp pass  $day_min_temp_comp" 
+    
+        if (state.order_patern == Patern_schedule || state.order_patern == 1)
+            {
+                log.debug "Wattering pattern pass" 
+                log.debug "rain data $rain_history_forecast" 
 
-        if (rain_history_forecast<Rain_check_value)
-       {
-           	log.debug "Rain threshold pass" 
-			sendMessage ("Watterind started", true)
-        	
-            state.VALVE_SESSION = 1
-			state.VALVE_NUMBER = 1
-        
-            valve_main.on()
-       		wattering_start()
-        }
-        else
-        {
-         log.debug "EXIT due to the raine $rain_history_forecast"
-         
-       
-         wattering_exit(1)
-		 //EXIT DUE TO RAIN
-         sendMessage ("Watterind aborted due to the raine threshold is $rain_history_forecast", true)
-        }
+                if (rain_history_forecast<Rain_check_value)
+               {
+                    log.debug "Rain threshold pass" 
+                    sendMessage ("Watterind started", true)
+
+                    state.VALVE_SESSION = 1
+                    state.VALVE_NUMBER = 1
+
+                    valve_main.on()
+                    wattering_start()
+                }
+                else
+                {
+                 log.debug "EXIT due to the raine $rain_history_forecast"
+
+
+                 wattering_exit(1)
+                 //EXIT DUE TO RAIN
+                 sendMessage ("Watterind aborted due to the raine threshold is $rain_history_forecast", true)
+                }
+            }
+            else
+            {
+
+                //if we skip run based on pattern
+                log.debug "Pattern skip run" 
+
+                wattering_exit(3)
+            }
+
     }
-	else
-	{
-    	
-		//if we skip run based on pattern
-		log.debug "Pattern skip run" 
-	    
-		wattering_exit(3)
-	}
+    
+    else
+    {
+    	//Pass wattering due to low temp
+             sendMessage ("Watterind aborted due to the low temp threshold is $day_min_temp_comp", true)
+			wattering_exit(2)
+            //do now changes anything just reschedule
+    
+    }
+    
         
         
 	//EXIT
@@ -936,6 +965,15 @@ def wattering_exit(exit_type)
 {
 
 
+/*
+exit_type
+ 0 - normal
+ 1 - rain
+ 2 - low temp
+ 3 - patern pass
+
+*/
+
 	valves_all_off()
 
     
@@ -944,40 +982,14 @@ def wattering_exit(exit_type)
     if (state.order_patern_num ==2) {Patern_schedule=Patern_schedule_2}
     if (state.order_patern_num ==3) {Patern_schedule=Patern_schedule_3}
     if (state.order_patern_num ==4) {Patern_schedule=Patern_schedule_4}
-//////////////
-/*
-
-    def past_12=0
-   
-
-    def forecast_12 = state.wheater_data_temp[0]
-    def day_max_temp= state.wheater_data_temp[1]
-    def day_max_temp_rf= state.wheater_data_temp[2]
-
-    def day_max_temp_real = 0
- 
-    
-	if (day_max_temp>day_max_temp_rf) 
-    {
-        day_max_temp_real=day_max_temp
-    } else
-    {
-        day_max_temp_real=day_max_temp_rf
-    }
 
 
-	log.debug "Exit temp check -  : ${day_max_temp_real}" 
-    sendMessage ("Exit temp check -  : ${day_max_temp_real}" , true)   
-*/
-//////////////
-
-//4 - patern - 1  
-
-
-	state.order_patern=state.order_patern-1
-
-	if (0>state.order_patern){state.order_patern=Patern_schedule-1}
- 
+ if (exit_type!=2)
+ 		{
+			//patern changed only in case that is not low temp pass
+            state.order_patern=state.order_patern-1
+			if (0>state.order_patern){state.order_patern=Patern_schedule-1}
+ 		}
  
     
 	state.VALVE_SESSION = 1
@@ -987,60 +999,10 @@ def wattering_exit(exit_type)
   
   	Patern_check_scheduler()
   
-  	set_schedulers(true)
+    runIn(2*60*1000,set_schedulers(true))   	
+  	
 
-//////////////////////////////////
-/*
-	log.debug "Exit max temp# : ${day_max_temp_real}" 
 
-// ALIGN WITH REGULAR FLOW AS IT RESET EVERTHING
-//temp check & pattern
-	if (day_max_temp_real>Max_temp_schedule_1 && state.order_patern_num!=2) 
-    	{
-    		def result_patern =  Patern_schedule_2+state.order_patern - Patern_schedule       
-            if (0>=result_patern) 
-            	{state.order_patern=1}
-                else
-                {state.order_patern=result_patern}
-           	
-            state.order_patern_num=2
-        }
-    if (day_max_temp_real>Max_temp_schedule_2 && state.order_patern_num!=3) 
-    	{
-        	def result_patern =  Patern_schedule_3+state.order_patern - Patern_schedule       
-            if (0>=result_patern) 
-            	{state.order_patern=1}
-                else
-                {state.order_patern=result_patern}
-        
-        state.order_patern_num=3
-        }
-   if (day_max_temp_real>Max_temp_schedule_3 && state.order_patern_num!=4) 
-    	{
-        	def result_patern =  Patern_schedule_4+state.order_patern - Patern_schedule       
-            if (0>=result_patern) 
-            	{state.order_patern=1}
-                else
-                {state.order_patern=result_patern}        	
-  
-        state.order_patern_num=4
-        }
-    if (Max_temp_schedule_1>day_max_temp_real && state.order_patern_num!=1) 
-    	{
-        	def result_patern =  Patern_schedule_1+state.order_patern - Patern_schedule       
-            if (0>=result_patern) 
-            	{state.order_patern=1}
-                else
-                {state.order_patern=result_patern}
-                
-        state.order_patern_num=1
-        }
-
-	log.debug "Exit Patern# : ${state.order_patern}" 
-    sendMessage ("Order patern after check -  : ${state.order_patern}" , true)   
-	log.debug "Exit order_patern_num : ${state.order_patern_num}" 
-*/
-/////////////////////////////////////////////////////
 }
 
 
@@ -1126,6 +1088,8 @@ def accuweather_forecast_12()
   							response_result << rain_next_6_hrs
                             response_result << day_temp[0]
 							response_result << day_temp_RF[0]
+                            response_result << night_temp[0]
+                            response_result << night_temp_RF[0]
 
                             
                           //  log.debug "rain_result: $rain_next_6_hrs" 
