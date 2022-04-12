@@ -999,10 +999,16 @@ exit_type
   
   	Patern_check_scheduler()
   
-    runIn(2*60*1000,set_schedulers(true))   	
+    runIn(2*60,re_schedule)   	
   	
 
 
+}
+
+
+def re_schedule()
+{
+set_schedulers(true)
 }
 
 
