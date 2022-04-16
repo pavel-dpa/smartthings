@@ -11,7 +11,7 @@
  *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
  *  for the specific language governing permissions and limitations under the License.
- *
+ *.
  */
  
 definition(
@@ -82,36 +82,36 @@ preferences {
 		input "valve_main", "capability.switch",title: "Main valve", required: true, multiple: false
 
         input "valve01", "capability.switch", title: "Zone 1 valve", required: true, multiple: false
-		input "valve01_time", type: "number" , title: "Zone 1 - time", required: false, defaultValue: "5"
-        input "valve01_session_count", type: "number" , title: "Zone 1 - count",required: false, defaultValue: "2"  
+		input "valve01_time", type: "number" , title: "Zone 1 - time", required: false, defaultValue: 7
+        input "valve01_session_count", type: "number" , title: "Zone 1 - count",required: false, defaultValue: 2
         
         input "valve02", "capability.switch", title: "Zone 2 valve", required: false, multiple: false
-		input "valve02_time", type: "number" , title: "Zone 2 - time", required: false, defaultValue: "5"
-        input "valve02_session_count", type: "number" , title: "Zone 2 - count",required: false, defaultValue: "2"       
+		input "valve02_time", type: "number" , title: "Zone 2 - time", required: false, defaultValue: 7
+        input "valve02_session_count", type: "number" , title: "Zone 2 - count",required: false, defaultValue: 2       
         
         input "valve03", "capability.switch", title: "Zone 3 valve", required: false, multiple: false
-		input "valve03_time", type: "number" , title: "Zone 3 - time", required: false, defaultValue: "5"
-        input "valve03_session_count", type: "number" , title: "Zone 3 - count",required: false, defaultValue: "2"       
+		input "valve03_time", type: "number" , title: "Zone 3 - time", required: false, defaultValue: 5
+        input "valve03_session_count", type: "number" , title: "Zone 3 - count",required: false, defaultValue: 1       
         
         input "valve04", "capability.switch", title: "Zone 4 valve", required: false, multiple: false
-		input "valve04_time", type: "number" , title: "Zone 4 - time", required: false, defaultValue: "5"
-        input "valve04_session_count", type: "number" , title: "Zone 4 - count",required: false, defaultValue: "2"       
+		input "valve04_time", type: "number" , title: "Zone 4 - time", required: false, defaultValue: 10
+        input "valve04_session_count", type: "number" , title: "Zone 4 - count",required: false, defaultValue: 1       
         
         input "valve05", "capability.switch", title: "Zone 5 valve", required: false, multiple: false
-		input "valve05_time", type: "number" , title: "Zone 5 - time", required: false, defaultValue: "5"
-        input "valve05_session_count", type: "number" , title: "Zone 5 - count",required: false, defaultValue: "2"  
+		input "valve05_time", type: "number" , title: "Zone 5 - time", required: false, defaultValue: 7
+        input "valve05_session_count", type: "number" , title: "Zone 5 - count",required: false, defaultValue: 2  
         
         input "valve06", "capability.switch", title: "Zone 6 valve", required: false, multiple: false
-		input "valve06_time", type: "number" , title: "Zone 6 - time", required: false, defaultValue: "5"
-        input "valve06_session_count", type: "number" , title: "Zone 6 - count",required: false, defaultValue: "2"       
+		input "valve06_time", type: "number" , title: "Zone 6 - time", required: false, defaultValue: 5
+        input "valve06_session_count", type: "number" , title: "Zone 6 - count",required: false, defaultValue: 1
         
         input "valve07", "capability.switch", title: "Zone 7 valve", required: false, multiple: false
-		input "valve07_time", type: "number" , title: "Zone 7 - time", required: false, defaultValue: "5"
-        input "valve07_session_count", type: "number" , title: "Zone 7 - count",required: false, defaultValue: "2"       
+		input "valve07_time", type: "number" , title: "Zone 7 - time", required: false, defaultValue: 10
+        input "valve07_session_count", type: "number" , title: "Zone 7 - count",required: false, defaultValue:2
         
         input "valve08", "capability.switch", title: "Zone 8 valve", required: false, multiple: false
-		input "valve08_time", type: "number" , title: "Zone 8 - time", required: false, defaultValue: "5"
-        input "valve08_session_count", type: "number" , title: "Zone 8 - count",required: false, defaultValue: "2"       
+		input "valve08_time", type: "number" , title: "Zone 8 - time", required: false, defaultValue:10
+        input "valve08_session_count", type: "number" , title: "Zone 8 - count",required: false, defaultValue:2
 	}
     
 	section("Send Notifications?") {
@@ -160,9 +160,11 @@ log.debug "Offset : ${off_calc}"
 //2 - set schedulers
 unschedule()
 
+        
         def time_delay_valve_min = off_calc / 60
 
 		def Sunrize_delay_FULL = -1*(Sunrize_delay+time_delay_valve_min)
+        log.debug "Sunrize_delay_FULL: ${Sunrize_delay_FULL}"
     	def Sunset_Sunrise = getSunriseAndSunset(sunriseOffset: Sunrize_delay_FULL, sunsetOffset: Sunset_delay)
 		log.debug "GET SUN SET: ${Sunset_Sunrise}"
 				
@@ -180,6 +182,9 @@ unschedule()
         def schedule_message_str2 = ''
         
         //define dates for comapre
+      
+
+        
         
 //DATES CALCULATIONS
 if (Sunrize_check_info)
@@ -188,7 +193,7 @@ if (Sunrize_check_info)
         // each wattering run
 		
         
-
+          
         
         def between_second = timeOfDayIsBetween(sunrise_offset, midnightTime, new Date(), location.timeZone)
         if (between_second)
@@ -254,10 +259,16 @@ if (Sunrize_check_info)
 
 
 
+
+
+
 if (Sunset_check_info)
 	{
     	//using sunrize offsets
-		def between = timeOfDayIsBetween(sunrise_offset, sunset_offset, new Date(), location.timeZone)
+       
+        
+		//def between = timeOfDayIsBetween(sunrise_offset, sunset_offset, new Date(), location.timeZone)
+        def between = timeOfDayIsBetween(timer_1_date, sunset_offset, new Date(), location.timeZone)
 		if (between)
         {
          //Schedule for today
@@ -266,7 +277,7 @@ if (Sunset_check_info)
             ///schedule(Sunset_Sunrise.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone),wattering)
 			///sendMessage("Watterind setuped for today at : $sunset_offset",message_type)          
 
-			timer_2_date = Sunset_Sunrise.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+			timer_2_date = Sunset_Sunrise.sunset//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
             schedule_message_str2 = 'Watterind setuped for today at : '//+timer_2_date//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
             
             
@@ -277,14 +288,15 @@ if (Sunset_check_info)
          //Schedule for tomorrow
          	
             /// compare    -   Sunset_Sunrise_tomorrow.sunset
-			def Sunset_Sunrise_tomorrow = getSunriseAndSunset(sunriseOffset: Sunrize_delay_FULL, sunsetOffset: Sunset_delay, date: new Date()+1)
+            def tomm_dat = (new Date()+1)
+			def Sunset_Sunrise_tomorrow = getSunriseAndSunset(sunriseOffset: Sunrize_delay_FULL, sunsetOffset: Sunset_delay, date: tomm_dat)
 			///schedule(Sunset_Sunrise_tomorrow.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone),wattering)
 			///sendMessage("Watterind setuped for tomorrow at : $sunset_offset",message_type)         
           
-            timer_2_date = Sunset_Sunrise_tomorrow.sunset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+            timer_2_date = Sunset_Sunrise_tomorrow.sunset//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
             schedule_message_str2 = 'Watterind setuped for tomorrow at : '//+timer_2_date//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
             
-            log.debug "Schedules sunset wattering for tomorrow at: $sunset_offset"
+            log.debug "Schedules sunset wattering for tomorrow at: $timer_2_date"
         }
         
     }
@@ -292,7 +304,7 @@ if (Sunset_check_info)
     { if (start_after_W) {       
 		//Second RUN by timers
  		def processing_time_Final_A = Date.parse("yyyy-MM-dd'T'HH:mm:ss", start_after_W,location.timeZone)
-        def start_aftre_w_time = new Date(processing_time_Final_A.time).format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+        def start_aftre_w_time = new Date(processing_time_Final_A.time)//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
         
         //OLD//def sch_string_A =  processing_time_Final_A.hours + " " + processing_time_Final_A.minutes+ " * * * ?"	
         //LAST//def sch_string_A =  "0 "+processing_time_Final_A.minutes+" "+processing_time_Final_A.hours + " ? * MON-SUN"	
@@ -318,7 +330,12 @@ def set_clear_timer_date1 = timeTodayAfter(new Date(),timer_1_date,location.time
 
 if (start_after_W || Sunset_check_info)
 {
-def set_clear_timer_date2 = timeTodayAfter(new Date(),timer_2_date,location.timeZone)
+//def set_clear_timer_date2 = timeTodayAfter(new Date(),timer_2_date,location.timeZone)
+
+def set_clear_timer_date2 = timer_2_date
+
+if (Sunset_check_info == false)
+	{ set_clear_timer_date2 = timeTodayAfter(new Date(),timer_2_date,location.timeZone)}
 
 log.debug "set_clear_timer_date1 : $set_clear_timer_date1"                  
 log.debug "set_clear_timer_date2 : $set_clear_timer_date2"                  
@@ -376,22 +393,53 @@ def offset_calc=0
 
 try
     	{
-		if (valve01 && valve01_time>0 && valve01_session_count>0)  
+		if (valve01)
+        	{ if (valve01_time.toInteger()>0 && valve01_session_count.toInteger()>0)  
         	{offset_calc=offset_calc+valve01_time.toInteger()*valve01_session_count.toInteger()*60}
-        if (valve02 && valve02_time>0 && valve02_session_count>0)  
+            }
+            //log.debug "offset_calc #1 : ${offset_calc}"         
+            
+        if (valve02 )
+        	{ if (valve02_time.toInteger()>0 && valve02_session_count.toInteger()>0)  
             {offset_calc=offset_calc+valve02_time.toInteger()*valve02_session_count.toInteger()*60}
-        if (valve03 && valve03_time>0 && valve03_session_count>0)  
+            }
+            //log.debug "offset_calc #2 : ${offset_calc}"
+            
+        if (valve03)
+        	{ if (valve03_time.toInteger()>0 && valve03_session_count.toInteger()>0)  
             {offset_calc=offset_calc+valve03_time.toInteger()*valve03_session_count.toInteger()*60}
-        if (valve04 && valve04_time>0 && valve04_session_count>0)  
+            }
+            //log.debug "offset_calc #3 : ${offset_calc}"
+            
+        if (valve04)
+        	{ if ( valve04_time.toInteger()>0 && valve04_session_count.toInteger()>0)  
             {offset_calc=offset_calc+valve04_time.toInteger()*valve04_session_count.toInteger()*60}
- 		if (valve05 && valve05_time>0 && valve05_session_count>0)  
+            }
+            //log.debug "offset_calc #4 : ${offset_calc}"
+            
+ 		if (valve05 )
+        	{ if ( valve05_time.toInteger()>0 && valve05_session_count.toInteger()>0)  
         	{offset_calc=offset_calc+valve05_time.toInteger()*valve05_session_count.toInteger()*60}
-        if (valve06 && valve06_time>0 && valve06_session_count>0)  
+            }
+            //log.debug "offset_calc #5 : ${offset_calc}"
+            
+        if (valve06 )
+        	{ if ( valve06_time.toInteger()>0 && valve06_session_count.toInteger()>0)  
             {offset_calc=offset_calc+valve06_time.toInteger()*valve06_session_count.toInteger()*60}
-        if (valve07 && valve07_time>0 && valve07_session_count>0)  
+            }
+            //log.debug "offset_calc #6 : ${offset_calc}"
+            
+        if (valve07 )
+        	{ if ( valve07_time.toInteger()>0 && valve07_session_count.toInteger()>0)  
             {offset_calc=offset_calc+valve07_time.toInteger()*valve07_session_count.toInteger()*60}
-        if (valve08 && valve08_time>0 && valve08_session_count>0)  
+            }
+            //log.debug "offset_calc #7 : ${offset_calc}"
+            
+        if (valve08 )
+        	{ if ( valve08_time.toInteger()>0 && valve08_session_count.toInteger()>0)  
             {offset_calc=offset_calc+valve08_time.toInteger()*valve08_session_count.toInteger()*60}
+            }
+            //log.debug "offset_calc #8 : ${offset_calc}"
  
   }
    		catch (e)
@@ -988,7 +1036,7 @@ exit_type
  		{
 			//patern changed only in case that is not low temp pass
             state.order_patern=state.order_patern-1
-			if (0>state.order_patern){state.order_patern=Patern_schedule-1}
+			if (0>=state.order_patern){state.order_patern=Patern_schedule-1}
  		}
  
     
@@ -999,16 +1047,10 @@ exit_type
   
   	Patern_check_scheduler()
   
-    runIn(2*60,re_schedule)   	
+	set_schedulers(true)
   	
 
 
-}
-
-
-def re_schedule()
-{
-set_schedulers(true)
 }
 
 
