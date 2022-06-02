@@ -223,7 +223,7 @@ if (Sunrize_check_info)
            ///schedule(Sunset_Sunrise.sunrise.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone),wattering)
 		  ///sendMessage("Watterind setuped for today at : $sunrise_offset",message_type)
         
-          timer_1_date = Sunset_Sunrise.sunrise
+          timer_1_date = Sunset_Sunrise.sunrise.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
 		  schedule_message_str1 = 'Watterind setuped for today at : '//+sunrise_offset.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
 
           log.debug "Schedules sunrise wattering for today: $sunrise_offset" 
@@ -459,7 +459,11 @@ try
 def wattering_init_setup()
 {
 
-	state.wheater_data_temp = accuweather_forecast_12()
+	 state.wheater_data_temp = accuweather_forecast_12()
+
+    
+    state.rain_current = state.wheater_data_temp[0]
+    state.rain_history = accuweather_Historical_Current()
     
     set_schedulers(true)
 	/*if (state.order_patern_num ==0)
@@ -485,11 +489,18 @@ def wattering()
 
     def forecast_12 = state.wheater_data_temp[0]
 	def rain_data_12 = accuweather_Historical_Current()
-    def rain_history_forecast = rain_data_12 + forecast_12
+    
+    state.rain_current = state.wheater_data_temp[0]
+    state.rain_history = rain_data_12
+    
+    
+    def rain_history_forecast = state.rain_current  + state.rain_history
     
     def day_min_temp = state.wheater_data_temp[3]
     def day_min_temp_rf =  state.wheater_data_temp[4]
- 
+    
+    
+
 
     def day_min_temp_comp = day_min_temp
     
@@ -509,15 +520,17 @@ def wattering()
 if (day_min_temp_comp>Min_temp_start)
 {
 	log.debug "Wattering min_temp pass  $day_min_temp_comp" 
-    
-        if (state.order_patern == Patern_schedule || state.order_patern == 1)
+    log.debug "rain data $rain_history_forecast" 
+     
+     if (rain_history_forecast<Rain_check_value)
+     
             {
-                log.debug "Wattering pattern pass" 
-                log.debug "rain data $rain_history_forecast" 
+                log.debug "Rain threshold pass" 
+                
 
-                if (rain_history_forecast<Rain_check_value)
+        if (state.order_patern == Patern_schedule || state.order_patern == 1)          
                {
-                    log.debug "Rain threshold pass" 
+               		log.debug "Wattering pattern pass" 
                     sendMessage ("Watterind started", true)
 
                     state.VALVE_SESSION = 1
@@ -528,21 +541,19 @@ if (day_min_temp_comp>Min_temp_start)
                 }
                 else
                 {
-                 log.debug "EXIT due to the raine $rain_history_forecast"
+                	//if we skip run based on pattern
+                	log.debug "Pattern skip run" 
 
-
-                 wattering_exit(1)
-                 //EXIT DUE TO RAIN
-                 sendMessage ("Watterind aborted due to the raine threshold is $rain_history_forecast", true)
+                	wattering_exit(3)
                 }
             }
             else
             {
+				log.debug "EXIT due to the raine $rain_history_forecast"
 
-                //if we skip run based on pattern
-                log.debug "Pattern skip run" 
-
-                wattering_exit(3)
+                 wattering_exit(1)
+                 //EXIT DUE TO RAIN
+                 sendMessage ("Watterind aborted due to the raine threshold is $rain_history_forecast", true)
             }
 
     }
@@ -916,7 +927,7 @@ def Patern_check_scheduler()
  switch (day_max_temp_real)
     {
     
-    	  case {it>Max_temp_schedule_3 && state.order_patern_num!=4}:
+    	  case {it>Max_temp_schedule_3 }://&& state.order_patern_num!=4}:
          	def result_patern =  Patern_schedule_4+state.order_patern - Patern_schedule       
             if (0>=result_patern) 
             	{state.order_patern=1}
@@ -924,9 +935,9 @@ def Patern_check_scheduler()
                 {state.order_patern=result_patern}        	
   
         	state.order_patern_num=4
-         break;z
+         break;
          
-         case {it>Max_temp_schedule_2 && state.order_patern_num!=3}:
+         case {it>Max_temp_schedule_2 }://&& state.order_patern_num!=3}:
          	def result_patern =  Patern_schedule_3+state.order_patern - Patern_schedule       
             if (0>=result_patern) 
             	{state.order_patern=1}
@@ -936,7 +947,7 @@ def Patern_check_scheduler()
         	state.order_patern_num=3
         break;
         
-        case {it>Max_temp_schedule_1 && state.order_patern_num!=2}:
+        case {it>Max_temp_schedule_1 }://&& state.order_patern_num!=2}:
           	def result_patern =  Patern_schedule_2+state.order_patern - Patern_schedule       
             if (0>=result_patern) 
             	{state.order_patern=1}
@@ -946,7 +957,7 @@ def Patern_check_scheduler()
             state.order_patern_num=2 
         break;
   
-         case {Max_temp_schedule_1>=it && state.order_patern_num!=1}:
+         case {Max_temp_schedule_1>=it}:// && state.order_patern_num!=1}:
          	def result_patern =  Patern_schedule_1+state.order_patern - Patern_schedule       
             if (0>=result_patern) 
             	{state.order_patern=1}
@@ -1015,10 +1026,10 @@ def wattering_exit(exit_type)
 
 /*
 exit_type
- 0 - normal
- 1 - rain
- 2 - low temp
- 3 - patern pass
+ 0 - normal - patern shift
+ 1 - rain   - patern doesn't shift
+ 2 - low temp  - patern doesn't shift
+ 3 - patern pass  - patern shift
 
 */
 
@@ -1032,9 +1043,9 @@ exit_type
     if (state.order_patern_num ==4) {Patern_schedule=Patern_schedule_4}
 
 
- if (exit_type!=2)
+ if (exit_type==0 || exit_type==3)
  		{
-			//patern changed only in case that is not low temp pass
+			
             state.order_patern=state.order_patern-1
 			if (0>=state.order_patern){state.order_patern=Patern_schedule-1}
  		}
@@ -1200,7 +1211,8 @@ def accuweather_Historical_Current()
 							//log.debug "result: $response"
                             
         
-                            def total_l = response?.PrecipitationSummary?.Past12Hours?.Metric?.Value
+                            //def total_l = response?.PrecipitationSummary?.Past12Hours?.Metric?.Value
+                            def total_l = response?.PrecipitationSummary?.Past24Hours?.Metric?.Value
                             
                            
                             //log.debug "TOTLA L : $total_l"
