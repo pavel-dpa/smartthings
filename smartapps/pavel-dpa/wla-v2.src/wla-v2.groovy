@@ -51,6 +51,13 @@ preferences {
         input "Sunset_delay", "number", title: "Sunset delay, min", required: false, defaultValue: 0
 
 	}
+    	section("Start points")
+    {
+        
+        input "order_start_number", "number", title: "Number for start (0 is auto)", required: true, defaultValue: 0
+        input "timer_start_process", "number", title: "1-only morning 2-only evening 0-auto", required: true, defaultValue: 0 //1-morning 2-evening 0-auto
+
+	}
        section("Temp and Raine")
        {
     
@@ -304,7 +311,7 @@ if (Sunset_check_info)
     { if (start_after_W) {       
 		//Second RUN by timers
  		def processing_time_Final_A = Date.parse("yyyy-MM-dd'T'HH:mm:ss", start_after_W,location.timeZone)
-        def start_aftre_w_time = new Date(processing_time_Final_A.time)//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+        def start_aftre_w_time = new Date(processing_time_Final_A.time).format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
         
         //OLD//def sch_string_A =  processing_time_Final_A.hours + " " + processing_time_Final_A.minutes+ " * * * ?"	
         //LAST//def sch_string_A =  "0 "+processing_time_Final_A.minutes+" "+processing_time_Final_A.hours + " ? * MON-SUN"	
@@ -328,54 +335,102 @@ if (Sunset_check_info)
 
 def set_clear_timer_date1 = timeTodayAfter(new Date(),timer_1_date,location.timeZone)
 
-if (start_after_W || Sunset_check_info)
-{
-//def set_clear_timer_date2 = timeTodayAfter(new Date(),timer_2_date,location.timeZone)
-
-def set_clear_timer_date2 = timer_2_date
-
-if (Sunset_check_info == false)
-	{ set_clear_timer_date2 = timeTodayAfter(new Date(),timer_2_date,location.timeZone)}
-
-log.debug "set_clear_timer_date1 : $set_clear_timer_date1"                  
-log.debug "set_clear_timer_date2 : $set_clear_timer_date2"                  
 
 
-	if (set_clear_timer_date1>set_clear_timer_date2)
-        {
-            log.debug "set_clear_timer_date2 CHECK: $set_clear_timer_date2"                  
-            schedule(set_clear_timer_date2,wattering)
+if (state.timer_start_first==0)
+            {
+             //AUTO option to start
+                        if (start_after_W || Sunset_check_info)
+                        {
+                        //def set_clear_timer_date2 = timeTodayAfter(new Date(),timer_2_date,location.timeZone)
+
+                        def set_clear_timer_date2 = timer_2_date
+
+                        if (Sunset_check_info == false)
+                            { set_clear_timer_date2 = timeTodayAfter(new Date(),timer_2_date,location.timeZone)}
+
+                        log.debug "set_clear_timer_date1 : $set_clear_timer_date1"                  
+                        log.debug "set_clear_timer_date2 : $set_clear_timer_date2"                  
+
+
+
+                        // TO DO - reuse evening_wattering & morning_wattering
+                            if (set_clear_timer_date1>set_clear_timer_date2)
+                                {
+                                    log.debug "set_clear_timer_date2 CHECK: $set_clear_timer_date2"                  
+                                    schedule(set_clear_timer_date2,evening_wattering)
+
+                                    schedule_message_str2 = schedule_message_str2 + set_clear_timer_date2.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+                                    sendMessage(schedule_message_str2,message_type)
+                                }
+                                else
+                                {
+                                    log.debug "set_clear_timer_date1 CHECK : $set_clear_timer_date1"                  
+                                    schedule(set_clear_timer_date1,morning_wattering)
+
+                                    schedule_message_str1 = schedule_message_str1 + set_clear_timer_date1.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+                                    sendMessage(schedule_message_str1,message_type)
+                                }
+
+                        }
+
+                        else
+
+                        {
+                        // ONLY FIRST RUN
+                                    log.debug "set_clear_timer_date1 CHECK ONLY : $set_clear_timer_date1"  
+                                    schedule_message_str1 = schedule_message_str1 + set_clear_timer_date1.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+
+
+                                    schedule(set_clear_timer_date1,morning_wattering)
+                                    sendMessage(schedule_message_str1,message_type)
+                        }
+
+            }
+            else
+            {
             
-            schedule_message_str2 = schedule_message_str2 + set_clear_timer_date2.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
-			sendMessage(schedule_message_str2,message_type)
-        }
-        else
-        {
-            log.debug "set_clear_timer_date1 CHECK : $set_clear_timer_date1"                  
-            schedule(set_clear_timer_date1,wattering)
+            	if (timer_1_date && timer_start_process==1)
+                        {
+                         //only morning starts
+
+                                    log.debug "morning start CHECK ONLY : $timer_1_date"  
+                                    if (Sunrize_check_info) 
+                                       {
+											schedule_message_str1 = schedule_message_str1+ timer_1_date//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+
+                                       }
+                                       else
+                                       {
+											schedule_message_str1 = schedule_message_str1+ timer_1_date//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+                                       }
+                                    
+                                    
+                                    schedule(timer_1_date,morning_wattering)
+                                    sendMessage(schedule_message_str1,message_type)
+                        }
             
-            schedule_message_str1 = schedule_message_str1 + set_clear_timer_date1.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
-			sendMessage(schedule_message_str1,message_type)
-        }
+				if (timer_2_date && timer_start_process==2)
+                            {
+                             //only evening starts
+                                     log.debug "evening start CHECK ONLY : $timer_1_date"  
+                                     if (Sunset_check_info) 
+                                       {
+                                          schedule_message_str2 = schedule_message_str2 + timer_2_date.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+										}
+                                        else
+                                        {
+                                          schedule_message_str2 = schedule_message_str2 + timer_2_date//.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
+                                        }
 
-}
-
-else
-
-{
-// ONLY FIRST RUN
-            log.debug "set_clear_timer_date1 CHECK ONLY : $set_clear_timer_date1"  
-			schedule_message_str1 = schedule_message_str1 + set_clear_timer_date1.format("yyyy-MM-dd'T'HH:mm:ss.SSSZ",location.timeZone)
-
+                                        schedule(timer_2_date,evening_wattering)
+                                        sendMessage(schedule_message_str2,message_type)
+                            }	           
             
-            schedule(set_clear_timer_date1,wattering)
-			sendMessage(schedule_message_str1,message_type)
-}
-
-    
+            }
  
  
-	
+	state.timer_start_first = 0
 
 
 
@@ -383,6 +438,23 @@ else
 
 
 
+}
+
+
+def morning_wattering()
+{
+	//for future schedule
+    state.timer_start_first = 2
+    
+	wattering ()
+}
+
+def evening_wattering()
+{
+	//for future schedule
+    state.timer_start_first = 1
+    
+	wattering()
 }
 
 
@@ -464,6 +536,8 @@ def wattering_init_setup()
     
     state.rain_current = state.wheater_data_temp[0]
     state.rain_history = accuweather_Historical_Current()
+    state.timer_start_first = timer_start_process
+    
     
     set_schedulers(true)
 	/*if (state.order_patern_num ==0)
@@ -476,9 +550,21 @@ def wattering_init_setup()
 
       Patern_check_scheduler()             
 
+	if (order_start_number!=0)
+    	{
+			log.debug "initial Patern# before update: ${state.order_patern}"
+			state.order_patern = order_start_number
+			sendMessage ("Initial order update $state.order_patern", true)
+
+		}
 	log.debug "initial Patern# : ${state.order_patern}" 
     
 	log.debug "Initial order_patern_num : ${state.order_patern_num}" 
+    
+     
+    
+    
+    
 }
 
 def wattering()
@@ -933,17 +1019,19 @@ def Patern_check_scheduler()
             	{state.order_patern=1}
                 else
                 {state.order_patern=result_patern}        	
-  
+
+			log.debug "result_patern #4 -  : ${result_patern}" 
         	state.order_patern_num=4
          break;
          
          case {it>Max_temp_schedule_2 }://&& state.order_patern_num!=3}:
-         	def result_patern =  Patern_schedule_3+state.order_patern - Patern_schedule       
+         	def result_patern =  Patern_schedule_3+state.order_patern - Patern_schedule  
             if (0>=result_patern) 
             	{state.order_patern=1}
                 else
                 {state.order_patern=result_patern}
-        
+        	
+            log.debug "result_patern #3 -  : ${result_patern}" 
         	state.order_patern_num=3
         break;
         
@@ -954,6 +1042,7 @@ def Patern_check_scheduler()
                 else
                 {state.order_patern=result_patern}
            	
+            log.debug "result_patern #2 -  : ${result_patern}" 
             state.order_patern_num=2 
         break;
   
@@ -963,7 +1052,8 @@ def Patern_check_scheduler()
             	{state.order_patern=1}
                 else
                 {state.order_patern=result_patern}
-                
+            
+            log.debug "result_patern #2 -  : ${result_patern}" 
         	state.order_patern_num=1
         break;
 	}
