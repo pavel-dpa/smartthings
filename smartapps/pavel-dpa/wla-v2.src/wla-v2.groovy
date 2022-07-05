@@ -390,7 +390,7 @@ if (state.timer_start_first==0)
             else
             {
             
-            	if (timer_1_date && timer_start_process==1)
+            	if (timer_1_date && state.timer_start_first==1)
                         {
                          //only morning starts
 
@@ -410,7 +410,7 @@ if (state.timer_start_first==0)
                                     sendMessage(schedule_message_str1,message_type)
                         }
             
-				if (timer_2_date && timer_start_process==2)
+				if (timer_2_date && state.timer_start_first==2)
                             {
                              //only evening starts
                                      log.debug "evening start CHECK ONLY : $timer_1_date"  
