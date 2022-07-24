@@ -462,54 +462,87 @@ def calculate_the_offset()
 {
 
 def offset_calc=0
+def max_session_counts_offset = 0
 
 try
     	{
 		if (valve01)
         	{ if (valve01_time.toInteger()>0 && valve01_session_count.toInteger()>0)  
-        	{offset_calc=offset_calc+valve01_time.toInteger()*valve01_session_count.toInteger()*60}
+        		{
+                	offset_calc=offset_calc+valve01_time.toInteger()*valve01_session_count.toInteger()*60
+             		if (valve01_session_count.toInteger()>max_session_counts_offset) 
+                    		{max_session_counts_offset = valve01_session_count.toInteger()}
+            	}
             }
             //log.debug "offset_calc #1 : ${offset_calc}"         
             
         if (valve02 )
         	{ if (valve02_time.toInteger()>0 && valve02_session_count.toInteger()>0)  
-            {offset_calc=offset_calc+valve02_time.toInteger()*valve02_session_count.toInteger()*60}
+            	{
+                	offset_calc=offset_calc+valve02_time.toInteger()*valve02_session_count.toInteger()*60
+            		if (valve02_session_count.toInteger()>max_session_counts_offset) 
+                    	{max_session_counts_offset = valve02_session_count.toInteger()}
+            	}
             }
             //log.debug "offset_calc #2 : ${offset_calc}"
             
         if (valve03)
         	{ if (valve03_time.toInteger()>0 && valve03_session_count.toInteger()>0)  
-            {offset_calc=offset_calc+valve03_time.toInteger()*valve03_session_count.toInteger()*60}
+            	{
+                	offset_calc=offset_calc+valve03_time.toInteger()*valve03_session_count.toInteger()*60
+            		if (valve03_session_count.toInteger()>max_session_counts_offset) 
+                    	{max_session_counts_offset = valve03_session_count.toInteger()}
+            	}
             }
             //log.debug "offset_calc #3 : ${offset_calc}"
             
         if (valve04)
         	{ if ( valve04_time.toInteger()>0 && valve04_session_count.toInteger()>0)  
-            {offset_calc=offset_calc+valve04_time.toInteger()*valve04_session_count.toInteger()*60}
+            	{
+                	offset_calc=offset_calc+valve04_time.toInteger()*valve04_session_count.toInteger()*60
+            		if (valve04_session_count.toInteger()>max_session_counts_offset) 
+                    	{max_session_counts_offset = valve04_session_count.toInteger()}
+            	}
             }
             //log.debug "offset_calc #4 : ${offset_calc}"
             
  		if (valve05 )
         	{ if ( valve05_time.toInteger()>0 && valve05_session_count.toInteger()>0)  
-        	{offset_calc=offset_calc+valve05_time.toInteger()*valve05_session_count.toInteger()*60}
+        	{
+            		offset_calc=offset_calc+valve05_time.toInteger()*valve05_session_count.toInteger()*60
+            		if (valve05_session_count.toInteger()>max_session_counts_offset) 
+                    		{max_session_counts_offset = valve05_session_count.toInteger()}
+            	}
             }
             //log.debug "offset_calc #5 : ${offset_calc}"
             
         if (valve06 )
         	{ if ( valve06_time.toInteger()>0 && valve06_session_count.toInteger()>0)  
-            {offset_calc=offset_calc+valve06_time.toInteger()*valve06_session_count.toInteger()*60}
+            {
+            		offset_calc=offset_calc+valve06_time.toInteger()*valve06_session_count.toInteger()*60
+            		if (valve06_session_count.toInteger()>max_session_counts_offset) 
+                			{max_session_counts_offset = valve06_session_count.toInteger()}
+            	}
             }
             //log.debug "offset_calc #6 : ${offset_calc}"
             
         if (valve07 )
         	{ if ( valve07_time.toInteger()>0 && valve07_session_count.toInteger()>0)  
-            {offset_calc=offset_calc+valve07_time.toInteger()*valve07_session_count.toInteger()*60}
+            	{	
+                	offset_calc=offset_calc+valve07_time.toInteger()*valve07_session_count.toInteger()*60
+            		if (valve07_session_count.toInteger()>max_session_counts_offset) 
+                    		{max_session_counts_offset = valve07_session_count.toInteger()}
+            	}
             }
             //log.debug "offset_calc #7 : ${offset_calc}"
             
         if (valve08 )
         	{ if ( valve08_time.toInteger()>0 && valve08_session_count.toInteger()>0)  
-            {offset_calc=offset_calc+valve08_time.toInteger()*valve08_session_count.toInteger()*60}
+            	{
+                	offset_calc=offset_calc+valve08_time.toInteger()*valve08_session_count.toInteger()*60
+            		if (valve08_session_count.toInteger()>max_session_counts_offset) 
+                    		{max_session_counts_offset = valve08_session_count.toInteger()}
+            	}
             }
             //log.debug "offset_calc #8 : ${offset_calc}"
  
@@ -519,8 +552,8 @@ try
         sendMessage("Check: Exception $e", false)
 		}
    
-    //plus 5 min for internal communication
-    offset_calc = offset_calc + 300
+    //3 min for each round for internal communication
+    offset_calc = offset_calc + max_session_counts_offset*180
    
    	return offset_calc
  
@@ -679,11 +712,11 @@ def wattering_start()
         	else 
         	{
             	log.debug "valve v1 exiting"
-            	runIn(1,valves_off)
+            	runIn(2,valves_off)
         	}
          } else {
             		log.debug "valve v1 exiting"
-            		runIn(1,valves_off)
+            		runIn(2,valves_off)
         			}
         break;
 
@@ -706,7 +739,7 @@ def wattering_start()
             }
         }else {
             		log.debug "valve v2 exiting"
-            		runIn(1,valves_off)
+            		runIn(2,valves_off)
         			}
         break;
         
@@ -730,7 +763,7 @@ def wattering_start()
             }
         } else {
             		log.debug "valve v3 exiting"
-            		runIn(1,valves_off)
+            		runIn(2,valves_off)
         			}
         break;
         
@@ -753,7 +786,7 @@ def wattering_start()
             }
         } else {
             		log.debug "valve v4 exiting"
-            		runIn(1,valves_off)
+            		runIn(2,valves_off)
         			}
         break;
         
@@ -772,11 +805,11 @@ def wattering_start()
             else 
             {
                 log.debug "valve v5 exiting"
-                runIn(1,valves_off)
+                runIn(2,valves_off)
             }
         } else {
             		log.debug "valve v5 exiting"
-            		runIn(1,valves_off)
+            		runIn(2,valves_off)
         			}
         break;
 
@@ -799,7 +832,7 @@ def wattering_start()
             }
         } else {
             		log.debug "valve v6 exiting"
-            		runIn(1,valves_off)
+            		runIn(2,valves_off)
         			}
         break;
         
@@ -822,7 +855,7 @@ def wattering_start()
             }
         } else {
             		log.debug "valve v7 exiting"
-            		runIn(1,valves_off)
+            		runIn(2,valves_off)
         			}
         break;
         
@@ -845,7 +878,7 @@ def wattering_start()
             }
         } else {
             		log.debug "valve v8 exiting"
-            		runIn(1,valves_off)
+            		runIn(2,valves_off)
         			}
         break;
     }
@@ -913,7 +946,8 @@ if (valve08 && valve08_session_count) {
         {
 
           log.debug "GO TO NEXT VALVE ${state.VALVE_NUMBER}"
-          wattering_start()
+          //wattering_start()
+          runIn(2,wattering_start)
         }
         else
         { 
@@ -928,8 +962,8 @@ if (valve08 && valve08_session_count) {
 
                     log.debug "EXIT"
                     
-					wattering_exit(0)
-
+                    runIn(2,wattering_exit_zero)
+					//wattering_exit(0)
 					//NORMAL EXIT AFTER WATTERING
 
                 }
@@ -939,12 +973,19 @@ if (valve08 && valve08_session_count) {
                 log.debug "Next session starting ${state.VALVE_SESSION} from ${max_session}"
 
                 //continue wattering - next session
-                wattering_start()
+                runIn(2,wattering_start)
+                //wattering_start()
 
                 }
         }
 
     
+}
+
+
+def wattering_exit_zero()
+{
+	wattering_exit(0)
 }
 
 
