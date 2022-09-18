@@ -1158,7 +1158,7 @@ def wattering_exit(exit_type)
 /*
 exit_type
  0 - normal - patern shift
- 1 - rain   - patern doesn't shift
+ 1 - rain   - patern doesn't shift and shift only if #1
  2 - low temp  - patern doesn't shift
  3 - patern pass  - patern shift
 
@@ -1174,10 +1174,14 @@ exit_type
     if (state.order_patern_num ==4) {Patern_schedule=Patern_schedule_4}
 
 
- if (exit_type==0 || exit_type==3)
+ if (exit_type!=2)
  		{
 			
-            state.order_patern=state.order_patern-1
+            //shift only for #0 and #3
+            if (exit_type==0 || exit_type==3) {state.order_patern=state.order_patern-1}
+            //rain and #1
+            if (exit_type==1 && state.order_patern==1) {state.order_patern=state.order_patern-1}
+            
 			if (0>=state.order_patern){state.order_patern=Patern_schedule-1}
  		}
  
